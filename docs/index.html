@@ -61,11 +61,12 @@
         .card.next h3 { color: var(--accent); }
         .card.future { opacity: 0.6; }
 
-        pre {
+        pre:not(.mermaid) {
             background: var(--code-bg); border: 1px solid var(--border); border-radius: 0.5rem;
             padding: 1.25rem; overflow-x: auto; font-size: 0.85rem; margin: 1rem 0;
             font-family: 'SF Mono', 'Fira Code', monospace;
         }
+        pre.mermaid { background: none; border: none; padding: 0; margin: 0; }
         code { color: var(--accent3); }
         .comment { color: var(--muted); }
 
@@ -105,6 +106,9 @@
             color: var(--muted); font-style: italic; font-size: 0.95rem;
         }
         .gap-quote strong { color: var(--text); font-style: normal; }
+
+        .mermaid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 2rem; margin: 2rem 0; }
+        .mermaid-wrap h2 { text-align: center; margin-bottom: 1.5rem; }
     </style>
 </head>
 <body>
@@ -128,23 +132,47 @@
             <p>We observed this firsthand: autonomous Claude Code sessions messaging each other with no context about who they're talking to, what the other agent does, or whether it's even listening. Messages go unread. Help requests get no response. Agents cold-email strangers.</p>
         </div>
 
-        <div class="architecture">
-            <h2 style="margin-bottom: 1.5rem;">Architecture</h2>
-            <pre>
-┌─────────────────────────────────────────┐
-│           <span>geno-agents</span>                     │
-│   registration · discovery · presence   │
-│                                         │
-│  <span>┌──────────┐ ┌──────────┐ ┌─────────┐</span>  │
-│  <span>│ registry │ │ who/find │ │ status  │</span>  │
-│  <span>└──────────┘ └──────────┘ └─────────┘</span>  │
-├─────────────────────────────────────────┤
-│           <span class="green">geno-msg</span>                       │
-│      lightweight message transport      │
-├─────────────────────────────────────────┤
-│  <span class="blue">agent A</span>      <span class="blue">agent B</span>      <span class="blue">agent C</span>     │
-│  benchmark    browser      messaging    │
-└─────────────────────────────────────────┘</pre>
+        <div class="mermaid-wrap">
+            <h2>Architecture</h2>
+            <pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a371f7', 'primaryTextColor': '#e6edf3', 'primaryBorderColor': '#a371f7', 'lineColor': '#30363d', 'secondaryColor': '#161b22', 'tertiaryColor': '#1c2128', 'background': '#161b22', 'mainBkg': '#161b22', 'nodeBorder': '#30363d', 'clusterBkg': '#1c2128', 'clusterBorder': '#30363d', 'titleColor': '#e6edf3', 'edgeLabelBackground': '#161b22', 'nodeTextColor': '#e6edf3' }}}%%
+graph TB
+    subgraph agents["<b>geno-agents</b><br/>registration · discovery · presence"]
+        direction LR
+        R["🔖 registry"]
+        W["🔍 who / find"]
+        S["💚 status"]
+    end
+
+    subgraph msg["<b>geno-msg</b><br/>lightweight message transport"]
+        direction LR
+        M["📨 send · read · notify"]
+    end
+
+    subgraph nodes["<b>agents</b>"]
+        direction LR
+        A["🧪 agent A<br/><i>benchmark</i>"]
+        B["🌐 agent B<br/><i>browser</i>"]
+        C["💬 agent C<br/><i>messaging</i>"]
+    end
+
+    agents --> msg
+    msg --> nodes
+
+    A <-.->|"messages"| B
+    B <-.->|"messages"| C
+
+    style agents fill:#1c2128,stroke:#a371f7,stroke-width:2px
+    style msg fill:#1c2128,stroke:#7ee787,stroke-width:2px
+    style nodes fill:#1c2128,stroke:#79c0ff,stroke-width:2px
+    style R fill:#161b22,stroke:#a371f7
+    style W fill:#161b22,stroke:#a371f7
+    style S fill:#161b22,stroke:#a371f7
+    style M fill:#161b22,stroke:#7ee787
+    style A fill:#161b22,stroke:#79c0ff
+    style B fill:#161b22,stroke:#79c0ff
+    style C fill:#161b22,stroke:#79c0ff
+            </pre>
         </div>
 
         <div class="install">
@@ -225,5 +253,13 @@ geno-agents who <code>"browser"</code></pre>
             <p>Part of the <a href="https://github.com/42euge">geno</a> ecosystem — <a href="https://github.com/42euge/geno-agents">GitHub</a></p>
         </footer>
     </div>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+        });
+    </script>
 </body>
 </html>
