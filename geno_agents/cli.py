@@ -163,6 +163,37 @@ def ls_cmd(as_json: bool, show_all: bool):
         click.echo(f"  {status_icon} {a.session_id[:8]}  {a.role:<20} {seen:<10} {a.description}{caps}{proj}{task}{res}")
 
 
+@main.command("who-are")
+@click.option("--all", "show_all", is_flag=True, help="Include stale agents")
+@click.option("--session-id", default=None)
+def who_are_cmd(show_all: bool, session_id: str | None):
+    """List all other agents in the network."""
+    if not session_id:
+        session_id = _detect_session_id()
+    agents = list_agents(include_stale=show_all)
+    others = [a for a in agents if a.session_id != session_id]
+
+    if not others:
+        click.echo("No other agents online.")
+        return
+
+    now = time.time()
+    for a in others:
+        age = int(now - a.last_seen)
+        if age < 60:
+            seen = f"{age}s ago"
+        elif age < 3600:
+            seen = f"{age // 60}m ago"
+        else:
+            seen = f"{age // 3600}h ago"
+
+        status_icon = {"available": "🟢", "busy": "🟡", "stale": "⚪", "offline": "🔴"}.get(a.status, "❓")
+        caps = f"  [{', '.join(a.capabilities)}]" if a.capabilities else ""
+        task = f"  📋 {a.working_on}" if a.working_on else ""
+        res = f"  🔒 {', '.join(a.using)}" if a.using else ""
+        click.echo(f"  {status_icon} {a.session_id[:8]}  {a.role:<20} {seen:<10} {a.description}{caps}{task}{res}")
+
+
 @main.command("who")
 @click.option("--session-id", default=None)
 def who_cmd(session_id: str | None):

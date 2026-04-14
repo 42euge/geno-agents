@@ -29,6 +29,12 @@ Show the current agent network. Use the `list_agents` MCP tool. Display a clean 
 ### `/geno-agents who`
 Show who this agent is — display the current session's agent card. Use the `who` MCP tool (no arguments needed).
 
+### `/geno-agents who-are`
+List all other agents in the network (excludes yourself). Run:
+```bash
+~/.geno/venv/bin/geno-agents who-are --session-id "${CLAUDE_SESSION_ID:-}"
+```
+
 ### `/geno-agents whois <query>`
 Find agents by role or capability. Use the `whois` MCP tool.
 Example: `/geno-agents whois browser` → finds agents with browser capability.
