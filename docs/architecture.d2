@@ -1,0 +1,126 @@
+direction: down
+
+geno-agents: "geno-agents\nregistration · discovery · presence" {
+  style: {
+    fill: "#1c2128"
+    stroke: "#a371f7"
+    stroke-width: 2
+    border-radius: 8
+    font-color: "#a371f7"
+    bold: true
+  }
+
+  registry: "registry" {
+    style: {
+      fill: "#161b22"
+      stroke: "#a371f7"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+  who: "who / find" {
+    style: {
+      fill: "#161b22"
+      stroke: "#a371f7"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+  status: "status" {
+    style: {
+      fill: "#161b22"
+      stroke: "#a371f7"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+
+  grid-columns: 3
+}
+
+geno-msg: "geno-msg\nlightweight message transport" {
+  style: {
+    fill: "#1c2128"
+    stroke: "#7ee787"
+    stroke-width: 2
+    border-radius: 8
+    font-color: "#7ee787"
+    bold: true
+  }
+
+  ops: "send · read · notify" {
+    style: {
+      fill: "#161b22"
+      stroke: "#7ee787"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+}
+
+agents: "agents" {
+  style: {
+    fill: "#1c2128"
+    stroke: "#79c0ff"
+    stroke-width: 2
+    border-radius: 8
+    font-color: "#79c0ff"
+    bold: true
+  }
+
+  grid-columns: 5
+
+  a: "agent A\nbenchmark" {
+    style: {
+      fill: "#161b22"
+      stroke: "#79c0ff"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+  ab: "⇄" {
+    style: {
+      fill: transparent
+      stroke: transparent
+      font-color: "#30363d"
+      font-size: 20
+    }
+  }
+  b: "agent B\nbrowser" {
+    style: {
+      fill: "#161b22"
+      stroke: "#79c0ff"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+  bc: "⇄" {
+    style: {
+      fill: transparent
+      stroke: transparent
+      font-color: "#30363d"
+      font-size: 20
+    }
+  }
+  c: "agent C\nmessaging" {
+    style: {
+      fill: "#161b22"
+      stroke: "#79c0ff"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+}
+
+geno-agents -> geno-msg: {
+  style: {
+    stroke: "#30363d"
+    stroke-width: 2
+  }
+}
+geno-msg -> agents: {
+  style: {
+    stroke: "#30363d"
+    stroke-width: 2
+  }
+}
