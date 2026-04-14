@@ -54,6 +54,19 @@ TOOLS = [
     },
     {
         "name": "who",
+        "description": "Show who this agent is — returns the current session's agent card.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "session_id": {
+                    "type": "string",
+                    "description": "Session ID (optional, auto-detected if omitted)",
+                },
+            },
+        },
+    },
+    {
+        "name": "whois",
         "description": "Find agents by role or capability. Use before messaging to find the right agent.",
         "inputSchema": {
             "type": "object",
@@ -139,6 +152,15 @@ def handle_tool_call(name: str, arguments: dict[str, Any]) -> str:
         return json.dumps([asdict(a) for a in agents], indent=2)
 
     elif name == "who":
+        sid = arguments.get("session_id") or _detect_session_id()
+        if not sid:
+            return json.dumps({"error": "Could not detect session ID"})
+        agent = get(sid)
+        if not agent:
+            return json.dumps({"registered": False, "message": "Not registered. Use register_agent first."})
+        return json.dumps(asdict(agent), indent=2)
+
+    elif name == "whois":
         query = arguments["query"]
         by_role = find_by_role(query)
         by_cap = find_by_capability(query)

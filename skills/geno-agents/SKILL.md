@@ -4,8 +4,8 @@ description: >-
   Agent coordination — register as an agent, see who's online, update status.
   Use when user says /geno-agents, wants to register this session, check who's online,
   or update what they're working on.
-allowed-tools: "Bash(~/.geno/venv/bin/geno-agents *) mcp__geno-agents__list_agents mcp__geno-agents__who mcp__geno-agents__update_agent mcp__geno-agents__register_agent"
-argument-hint: "[who|ls|register|update|status] [args...]"
+allowed-tools: "Bash(~/.geno/venv/bin/geno-agents *) mcp__geno-agents__list_agents mcp__geno-agents__who mcp__geno-agents__whois mcp__geno-agents__update_agent mcp__geno-agents__register_agent"
+argument-hint: "[who|whois|ls|register|update|status] [args...]"
 ---
 
 # geno-agents — Agent Coordination
@@ -26,9 +26,12 @@ Show the current agent network. Use the `list_agents` MCP tool. Display a clean 
 - Highlight the current session
 - Flag stale agents
 
-### `/geno-agents who <query>`
-Find agents by role or capability. Use the `who` MCP tool.
-Example: `/geno-agents who browser` → finds agents with browser capability.
+### `/geno-agents who`
+Show who this agent is — display the current session's agent card. Use the `who` MCP tool (no arguments needed).
+
+### `/geno-agents whois <query>`
+Find agents by role or capability. Use the `whois` MCP tool.
+Example: `/geno-agents whois browser` → finds agents with browser capability.
 
 ### `/geno-agents register <role>`
 Register this session as an agent with the given role. If a `.geno-agents` file exists in the current directory, read role/description/capabilities from it instead.

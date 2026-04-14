@@ -164,8 +164,34 @@ def ls_cmd(as_json: bool, show_all: bool):
 
 
 @main.command("who")
+@click.option("--session-id", default=None)
+def who_cmd(session_id: str | None):
+    """Show who this agent is (my card)."""
+    if not session_id:
+        session_id = _detect_session_id()
+    if not session_id:
+        click.echo("Not registered — session ID not detected.", err=True)
+        sys.exit(1)
+
+    agent = get(session_id)
+    if not agent:
+        click.echo("Not registered. Run: geno-agents register <role>")
+        return
+
+    caps = ", ".join(agent.capabilities) if agent.capabilities else "none"
+    click.echo(f"  Role:        {agent.role}")
+    click.echo(f"  Description: {agent.description or '—'}")
+    click.echo(f"  Project:     {agent.project or '—'}")
+    click.echo(f"  Capabilities: [{caps}]")
+    click.echo(f"  Status:      {agent.status}")
+    click.echo(f"  Working on:  {agent.working_on or '—'}")
+    click.echo(f"  Using:       {', '.join(agent.using) if agent.using else '—'}")
+    click.echo(f"  Session:     {agent.session_id}")
+
+
+@main.command("whois")
 @click.argument("query")
-def who_cmd(query: str):
+def whois_cmd(query: str):
     """Find agents by role or capability."""
     by_role = find_by_role(query)
     by_cap = find_by_capability(query)
