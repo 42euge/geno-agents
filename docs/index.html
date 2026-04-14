@@ -14,6 +14,7 @@
             --accent: #a371f7;
             --accent2: #7ee787;
             --accent3: #79c0ff;
+            --orange: #f0883e;
             --code-bg: #1c2128;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,30 +24,88 @@
             color: var(--text);
             line-height: 1.6;
         }
-        .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .container { max-width: 840px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-        header { text-align: center; padding: 4rem 0 3rem; }
-        header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        /* Nav */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem;
+        }
+        nav .logo { font-weight: 700; font-size: 1.1rem; }
+        nav .logo span { color: var(--accent); }
+        nav .nav-links { display: flex; gap: 1.5rem; }
+        nav .nav-links a {
+            color: var(--muted); text-decoration: none; font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        nav .nav-links a:hover { color: var(--text); }
+
+        /* Header */
+        header { text-align: center; padding: 3rem 0; }
+        header h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 0.75rem; }
         header h1 span { color: var(--accent); }
-        header p { color: var(--muted); font-size: 1.15rem; max-width: 500px; margin: 0 auto; }
+        header p { color: var(--muted); font-size: 1.2rem; max-width: 520px; margin: 0 auto 1.5rem; }
 
-        .badge-row { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+        /* Buttons */
+        .btn-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.65rem 1.25rem; border-radius: 0.5rem;
+            font-size: 0.9rem; font-weight: 500; text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent); color: #fff; border: 1px solid var(--accent);
+        }
+        .btn-primary:hover { background: #8b5cf6; border-color: #8b5cf6; }
+        .btn-secondary {
+            background: transparent; color: var(--text); border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--muted); background: var(--surface); }
+        .btn-ghost {
+            background: transparent; color: var(--muted); border: 1px solid transparent;
+        }
+        .btn-ghost:hover { color: var(--text); }
+
+        /* Badges */
+        .badge-row { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.25rem; }
         .badge {
-            display: inline-block; padding: 0.25rem 0.75rem; border-radius: 2rem;
-            font-size: 0.8rem; font-weight: 500; border: 1px solid var(--border);
+            display: inline-block; padding: 0.2rem 0.6rem; border-radius: 2rem;
+            font-size: 0.75rem; font-weight: 500; border: 1px solid var(--border);
             color: var(--muted);
         }
         .badge.purple { border-color: var(--accent); color: var(--accent); }
+        .badge.green { border-color: var(--accent2); color: var(--accent2); }
 
+        /* Sections */
+        section { margin: 3.5rem 0; }
+        section h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+        section h2 span { color: var(--accent); }
+
+        /* Problem block */
         .problem {
             background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
-            padding: 2rem; margin: 2rem 0;
+            padding: 2rem; margin: 2.5rem 0;
         }
         .problem h2 { font-size: 1.3rem; margin-bottom: 1rem; }
         .problem h2 span { color: var(--accent3); }
+        .gap-quote {
+            border-left: 3px solid var(--accent); padding: 1rem 1.5rem; margin: 1.5rem 0;
+            color: var(--muted); font-style: italic; font-size: 0.95rem;
+        }
+        .gap-quote strong { color: var(--text); font-style: normal; }
 
+        /* Architecture */
+        .arch-wrap {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
+            padding: 2rem; margin: 2.5rem 0; text-align: center;
+        }
+        .arch-wrap h2 { margin-bottom: 1.5rem; }
+
+        /* Grid & Cards */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
-        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        @media (max-width: 600px) { .grid, .grid-3 { grid-template-columns: 1fr; } }
 
         .card {
             background: var(--code-bg); border: 1px solid var(--border); border-radius: 0.5rem;
@@ -61,65 +120,74 @@
         .card.next h3 { color: var(--accent); }
         .card.future { opacity: 0.6; }
 
-        pre:not(.mermaid) {
+        /* Code */
+        pre {
             background: var(--code-bg); border: 1px solid var(--border); border-radius: 0.5rem;
             padding: 1.25rem; overflow-x: auto; font-size: 0.85rem; margin: 1rem 0;
             font-family: 'SF Mono', 'Fira Code', monospace;
         }
-        pre.mermaid { background: none; border: none; padding: 0; margin: 0; }
         code { color: var(--accent3); }
         .comment { color: var(--muted); }
 
-        .architecture {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
-            padding: 2rem; margin: 2rem 0; text-align: center;
-        }
-        .architecture pre {
-            background: none; border: none; text-align: left; display: inline-block;
-            font-size: 0.8rem; color: var(--muted); padding: 0;
-        }
-        .architecture pre span { color: var(--accent); }
-        .architecture pre .green { color: var(--accent2); }
-        .architecture pre .blue { color: var(--accent3); }
-
+        /* Install */
         .install {
             background: var(--surface); border: 1px solid var(--accent);
-            border-radius: 0.75rem; padding: 2rem; margin: 2rem 0;
+            border-radius: 0.75rem; padding: 2rem; margin: 2.5rem 0;
         }
-        .install h2 { margin-bottom: 1rem; }
+        .install h2 { margin-bottom: 0.5rem; }
+        .install p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
 
-        section { margin: 3rem 0; }
-        section h2 { font-size: 1.4rem; margin-bottom: 1rem; }
-        section h2 span { color: var(--accent); }
-
+        /* Commands table */
         .cmd-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
-        .cmd-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+        .cmd-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
         .cmd-table td:first-child { font-family: monospace; color: var(--accent3); white-space: nowrap; }
         .cmd-table td:last-child { color: var(--muted); }
 
-        footer { text-align: center; padding: 3rem 0 2rem; color: var(--muted); font-size: 0.85rem; }
+        /* .geno-agents file */
+        .file-spec {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
+            padding: 2rem; margin: 2.5rem 0;
+        }
+        .file-spec h2 { margin-bottom: 0.5rem; }
+        .file-spec p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+
+        /* Footer */
+        footer {
+            text-align: center; padding: 3rem 0 2rem; color: var(--muted); font-size: 0.85rem;
+            border-top: 1px solid var(--border); margin-top: 2rem;
+        }
         footer a { color: var(--accent); text-decoration: none; }
         footer a:hover { text-decoration: underline; }
-
-        .gap-quote {
-            border-left: 3px solid var(--accent); padding: 1rem 1.5rem; margin: 1.5rem 0;
-            color: var(--muted); font-style: italic; font-size: 0.95rem;
-        }
-        .gap-quote strong { color: var(--text); font-style: normal; }
-
-        .mermaid-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 2rem; margin: 2rem 0; }
-        .mermaid-wrap h2 { text-align: center; margin-bottom: 1.5rem; }
     </style>
 </head>
 <body>
     <div class="container">
+
+        <nav>
+            <div class="logo"><span>geno</span>-agents</div>
+            <div class="nav-links">
+                <a href="#getting-started">Getting Started</a>
+                <a href="#commands">Commands</a>
+                <a href="#architecture">Architecture</a>
+                <a href="#roadmap">Roadmap</a>
+                <a href="https://github.com/42euge/geno-agents">GitHub</a>
+            </div>
+        </nav>
+
         <header>
             <h1><span>geno</span>-agents</h1>
-            <p>Agent coordination layer — registration, discovery, and role management for multi-agent systems</p>
+            <p>Agent coordination layer — registration, discovery, and presence for multi-agent systems</p>
+            <div class="btn-row">
+                <a href="#getting-started" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/42euge/geno-agents" class="btn btn-secondary">View on GitHub</a>
+                <a href="#agent-file" class="btn btn-ghost">.geno-agents spec</a>
+            </div>
             <div class="badge-row">
                 <span class="badge purple">coordination</span>
+                <span class="badge green">MCP server</span>
                 <span class="badge">python</span>
                 <span class="badge">cli</span>
+                <span class="badge">skill</span>
             </div>
         </header>
 
@@ -132,42 +200,80 @@
             <p>We observed this firsthand: autonomous Claude Code sessions messaging each other with no context about who they're talking to, what the other agent does, or whether it's even listening. Messages go unread. Help requests get no response. Agents cold-email strangers.</p>
         </div>
 
-        <div class="mermaid-wrap">
-            <h2>Architecture</h2>
-            <img src="architecture.svg" alt="geno-agents architecture diagram" style="width: 100%; max-width: 700px; display: block; margin: 0 auto; border-radius: 0.5rem;" />
-        </div>
+        <section id="architecture">
+            <div class="arch-wrap">
+                <h2>Architecture</h2>
+                <img src="architecture.svg" alt="geno-agents architecture diagram" style="width: 100%; max-width: 700px; display: block; margin: 0 auto; border-radius: 0.5rem;" />
+            </div>
+        </section>
 
-        <div class="install">
-            <h2>Quick Start</h2>
-<pre><span class="comment"># Install</span>
-pip install -e path/to/geno-agents
+        <section id="getting-started">
+            <div class="install">
+                <h2>Getting Started</h2>
+                <p>Three ways to install — pick the one that fits your setup.</p>
 
-<span class="comment"># Register your agent</span>
-geno-agents register <code>"benchmark-agent"</code> \
-  -d <code>"Kaggle benchmark tasks"</code> \
-  -c kaggle -c benchmarks
+                <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--accent2);">1. Install the skill (recommended)</h3>
+<pre><span class="comment"># Via Vercel Skills CLI (works with Claude Code, Codex, Cursor, etc.)</span>
+npx skills add 42euge/geno-agents</pre>
 
-<span class="comment"># See who's online</span>
-geno-agents ls
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem; color: var(--accent3);">2. Install the Python CLI</h3>
+<pre><span class="comment"># Clone and install</span>
+git clone https://github.com/42euge/geno-agents
+pip install -e geno-agents</pre>
 
-<span class="comment"># Find who handles browser stuff</span>
-geno-agents who <code>"browser"</code></pre>
-        </div>
+                <h3 style="font-size: 0.95rem; margin: 1rem 0 0.5rem; color: var(--orange);">3. Add the MCP server</h3>
+<pre><span class="comment"># Add to .mcp.json</span>
+{
+  "geno-agents": {
+    "command": "python",
+    "args": ["-m", "geno_agents.mcp_server"]
+  }
+}</pre>
+            </div>
+        </section>
 
-        <section>
+        <section id="agent-file">
+            <div class="file-spec">
+                <h2><code>.geno-agents</code> file</h2>
+                <p>Drop a <code>.geno-agents</code> file at the root of any repo to declare its agent identity. On session start, the hook reads it and auto-registers.</p>
+<pre><span class="comment"># .geno-agents</span>
+role: benchmark-agent
+description: Kaggle Learning Benchmark
+capabilities:
+  - kaggle
+  - benchmarks
+  - notebooks</pre>
+                <p style="margin-top: 1rem;">No file? The hook falls back to inferring the role from <code>CLAUDE.md</code> and detecting MCP servers as capabilities.</p>
+            </div>
+        </section>
+
+        <section id="commands">
             <h2><span>Commands</span></h2>
+            <div class="grid grid-3">
+                <div class="card">
+                    <h3 style="color: var(--accent3);">who</h3>
+                    <p>Who am I? Show this agent's card.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color: var(--accent3);">who-are</h3>
+                    <p>Who else is here? List other agents.</p>
+                </div>
+                <div class="card">
+                    <h3 style="color: var(--accent3);">whois &lt;query&gt;</h3>
+                    <p>Who handles X? Search by role or capability.</p>
+                </div>
+            </div>
             <table class="cmd-table">
-                <tr><td>geno-agents register &lt;role&gt;</td><td>Register with a role, description, capabilities, and project</td></tr>
-                <tr><td>geno-agents update</td><td>Update agent card: --working-on, --using, --status</td></tr>
-                <tr><td>geno-agents ls</td><td>List all agents with roles, tasks, and resource usage</td></tr>
-                <tr><td>geno-agents who &lt;query&gt;</td><td>Find agents by role or capability</td></tr>
-                <tr><td>geno-agents heartbeat</td><td>Update presence (auto-runs via PostToolUse hook)</td></tr>
-                <tr><td>geno-agents unregister</td><td>Remove this agent from the registry</td></tr>
-                <tr><td>geno-agents prune</td><td>Remove stale agents not seen in 10+ minutes</td></tr>
+                <tr><td>register &lt;role&gt;</td><td>Register with a role, description, capabilities, and project</td></tr>
+                <tr><td>update</td><td>Update agent card: --working-on, --using, --status</td></tr>
+                <tr><td>ls</td><td>List all agents with roles, tasks, and resource usage</td></tr>
+                <tr><td>heartbeat</td><td>Update presence (auto via PostToolUse hook)</td></tr>
+                <tr><td>unregister</td><td>Remove from the registry</td></tr>
+                <tr><td>prune</td><td>Remove stale agents (10+ min inactive)</td></tr>
             </table>
         </section>
 
-        <section>
+        <section id="roadmap">
             <h2><span>Roadmap</span></h2>
             <div class="grid">
                 <div class="card done">
@@ -176,15 +282,15 @@ geno-agents who <code>"browser"</code></pre>
                 </div>
                 <div class="card done">
                     <h3><span class="icon">✓</span> Auto-Registration</h3>
-                    <p>SessionStart hook infers role from CLAUDE.md, detects MCPs as capabilities. Zero config.</p>
+                    <p>SessionStart hook reads <code>.geno-agents</code> file or infers from CLAUDE.md. Zero config.</p>
                 </div>
                 <div class="card done">
-                    <h3><span class="icon">✓</span> Live Presence</h3>
-                    <p>PostToolUse heartbeat keeps last_seen fresh. Stale agents auto-detected and prunable.</p>
+                    <h3><span class="icon">✓</span> MCP Server</h3>
+                    <p>4 tools: list_agents, who, whois, update_agent, register_agent. Native integration.</p>
                 </div>
                 <div class="card done">
-                    <h3><span class="icon">✓</span> Resource Awareness</h3>
-                    <p>Agents declare what they're using (browser, API). Others check before grabbing shared resources.</p>
+                    <h3><span class="icon">✓</span> Vercel Skill</h3>
+                    <p><code>/geno-agents</code> slash command. Works across Claude Code, Codex, Cursor, and 40+ agents.</p>
                 </div>
                 <div class="card next">
                     <h3><span class="icon">→</span> Task Board</h3>
@@ -213,7 +319,13 @@ geno-agents who <code>"browser"</code></pre>
         </section>
 
         <footer>
-            <p>Part of the <a href="https://github.com/42euge">geno</a> ecosystem — <a href="https://github.com/42euge/geno-agents">GitHub</a></p>
+            <p>Part of the <a href="https://github.com/42euge">geno</a> ecosystem</p>
+            <div class="btn-row" style="margin-top: 1rem;">
+                <a href="https://github.com/42euge/geno-agents" class="btn btn-secondary" style="font-size: 0.8rem;">GitHub</a>
+                <a href="https://github.com/42euge/geno-msg" class="btn btn-ghost" style="font-size: 0.8rem;">geno-msg</a>
+                <a href="https://github.com/42euge/geno-vla" class="btn btn-ghost" style="font-size: 0.8rem;">geno-vla</a>
+                <a href="https://github.com/42euge/geno-bot" class="btn btn-ghost" style="font-size: 0.8rem;">geno-bot</a>
+            </div>
         </footer>
     </div>
 </body>
