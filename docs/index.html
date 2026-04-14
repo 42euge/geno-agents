@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>geno-agents — Agent Coordination Layer</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --accent: #a371f7;
+            --accent2: #7ee787;
+            --accent3: #79c0ff;
+            --code-bg: #1c2128;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        header { text-align: center; padding: 4rem 0 3rem; }
+        header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        header h1 span { color: var(--accent); }
+        header p { color: var(--muted); font-size: 1.15rem; max-width: 500px; margin: 0 auto; }
+
+        .badge-row { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+        .badge {
+            display: inline-block; padding: 0.25rem 0.75rem; border-radius: 2rem;
+            font-size: 0.8rem; font-weight: 500; border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        .badge.purple { border-color: var(--accent); color: var(--accent); }
+
+        .problem {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
+            padding: 2rem; margin: 2rem 0;
+        }
+        .problem h2 { font-size: 1.3rem; margin-bottom: 1rem; }
+        .problem h2 span { color: var(--accent3); }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--code-bg); border: 1px solid var(--border); border-radius: 0.5rem;
+            padding: 1.25rem;
+        }
+        .card h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .card h3 .icon { margin-right: 0.25rem; }
+        .card p { color: var(--muted); font-size: 0.85rem; }
+        .card.done { border-color: var(--accent2); }
+        .card.done h3 { color: var(--accent2); }
+        .card.next { border-color: var(--accent); }
+        .card.next h3 { color: var(--accent); }
+        .card.future { opacity: 0.6; }
+
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border); border-radius: 0.5rem;
+            padding: 1.25rem; overflow-x: auto; font-size: 0.85rem; margin: 1rem 0;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        code { color: var(--accent3); }
+        .comment { color: var(--muted); }
+
+        .architecture {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem;
+            padding: 2rem; margin: 2rem 0; text-align: center;
+        }
+        .architecture pre {
+            background: none; border: none; text-align: left; display: inline-block;
+            font-size: 0.8rem; color: var(--muted); padding: 0;
+        }
+        .architecture pre span { color: var(--accent); }
+        .architecture pre .green { color: var(--accent2); }
+        .architecture pre .blue { color: var(--accent3); }
+
+        .install {
+            background: var(--surface); border: 1px solid var(--accent);
+            border-radius: 0.75rem; padding: 2rem; margin: 2rem 0;
+        }
+        .install h2 { margin-bottom: 1rem; }
+
+        section { margin: 3rem 0; }
+        section h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+        section h2 span { color: var(--accent); }
+
+        .cmd-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        .cmd-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+        .cmd-table td:first-child { font-family: monospace; color: var(--accent3); white-space: nowrap; }
+        .cmd-table td:last-child { color: var(--muted); }
+
+        footer { text-align: center; padding: 3rem 0 2rem; color: var(--muted); font-size: 0.85rem; }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        .gap-quote {
+            border-left: 3px solid var(--accent); padding: 1rem 1.5rem; margin: 1.5rem 0;
+            color: var(--muted); font-style: italic; font-size: 0.95rem;
+        }
+        .gap-quote strong { color: var(--text); font-style: normal; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span>geno</span>-agents</h1>
+            <p>Agent coordination layer — registration, discovery, and role management for multi-agent systems</p>
+            <div class="badge-row">
+                <span class="badge purple">coordination</span>
+                <span class="badge">python</span>
+                <span class="badge">cli</span>
+            </div>
+        </header>
+
+        <div class="problem">
+            <h2><span>The Problem:</span> Skills ≠ Coordination</h2>
+            <p>Every multi-agent framework focuses on <strong>what agents can do</strong> (skills, tools, prompts). None solve <strong>how agents find each other and coordinate work</strong>.</p>
+            <div class="gap-quote">
+                Giving agents a chat room doesn't make them collaborate any more than putting 5 strangers in a Slack channel makes them a team.
+            </div>
+            <p>We observed this firsthand: autonomous Claude Code sessions messaging each other with no context about who they're talking to, what the other agent does, or whether it's even listening. Messages go unread. Help requests get no response. Agents cold-email strangers.</p>
+        </div>
+
+        <div class="architecture">
+            <h2 style="margin-bottom: 1.5rem;">Architecture</h2>
+            <pre>
+┌─────────────────────────────────────────┐
+│           <span>geno-agents</span>                     │
+│   registration · discovery · presence   │
+│                                         │
+│  <span>┌──────────┐ ┌──────────┐ ┌─────────┐</span>  │
+│  <span>│ registry │ │ who/find │ │ status  │</span>  │
+│  <span>└──────────┘ └──────────┘ └─────────┘</span>  │
+├─────────────────────────────────────────┤
+│           <span class="green">geno-msg</span>                       │
+│      lightweight message transport      │
+├─────────────────────────────────────────┤
+│  <span class="blue">agent A</span>      <span class="blue">agent B</span>      <span class="blue">agent C</span>     │
+│  benchmark    browser      messaging    │
+└─────────────────────────────────────────┘</pre>
+        </div>
+
+        <div class="install">
+            <h2>Quick Start</h2>
+<pre><span class="comment"># Install</span>
+pip install -e path/to/geno-agents
+
+<span class="comment"># Register your agent</span>
+geno-agents register <code>"benchmark-agent"</code> \
+  -d <code>"Kaggle benchmark tasks"</code> \
+  -c kaggle -c benchmarks
+
+<span class="comment"># See who's online</span>
+geno-agents ls
+
+<span class="comment"># Find who handles browser stuff</span>
+geno-agents who <code>"browser"</code></pre>
+        </div>
+
+        <section>
+            <h2><span>Commands</span></h2>
+            <table class="cmd-table">
+                <tr><td>geno-agents register &lt;role&gt;</td><td>Register with a role, description, and capability tags</td></tr>
+                <tr><td>geno-agents unregister</td><td>Remove this agent from the registry</td></tr>
+                <tr><td>geno-agents ls</td><td>List all registered agents with roles and status</td></tr>
+                <tr><td>geno-agents who &lt;query&gt;</td><td>Find agents by role or capability</td></tr>
+                <tr><td>geno-agents heartbeat</td><td>Update presence (last seen, available/busy)</td></tr>
+                <tr><td>geno-agents prune</td><td>Remove stale agents not seen in 10+ minutes</td></tr>
+            </table>
+        </section>
+
+        <section>
+            <h2><span>Roadmap</span></h2>
+            <div class="grid">
+                <div class="card done">
+                    <h3><span class="icon">✓</span> Agent Registry</h3>
+                    <p>Register with role, description, and capabilities. Discover agents by role or capability.</p>
+                </div>
+                <div class="card done">
+                    <h3><span class="icon">✓</span> Presence</h3>
+                    <p>Heartbeat, available/busy status, stale agent pruning.</p>
+                </div>
+                <div class="card next">
+                    <h3><span class="icon">→</span> Task Board</h3>
+                    <p>Shared task lifecycle — delegate, accept, track progress, complete. Contract-net style negotiation.</p>
+                </div>
+                <div class="card next">
+                    <h3><span class="icon">→</span> Auto-Registration</h3>
+                    <p>Claude Code hook to register on session start. Role inferred from CLAUDE.md or skill context.</p>
+                </div>
+                <div class="card future">
+                    <h3><span class="icon">○</span> Shared Context</h3>
+                    <p>Project state document — goals, progress, who's editing what. The missing "blackboard."</p>
+                </div>
+                <div class="card future">
+                    <h3><span class="icon">○</span> Intent & Locks</h3>
+                    <p>Declare intent before editing files. Prevent conflicts between concurrent agents.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2><span>The Gap</span> in Multi-Agent Frameworks</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Skills Frameworks</h3>
+                    <p>Solve <strong>"what can an agent do?"</strong><br>SKILL.md, MCP servers, tool definitions.</p>
+                </div>
+                <div class="card">
+                    <h3>geno-agents</h3>
+                    <p>Solves <strong>"who's here and what are they doing?"</strong><br>Registration, discovery, coordination.</p>
+                </div>
+            </div>
+            <p style="color: var(--muted); margin-top: 1rem; font-size: 0.9rem;">No existing framework — CrewAI, AutoGen, LangGraph, A2A, OpenAI Swarm — solves all three of: dynamic discovery, task lifecycle with negotiation, and distributed shared context. Most assume you hardcode your agents at design time.</p>
+        </section>
+
+        <footer>
+            <p>Part of the <a href="https://github.com/42euge">geno</a> ecosystem — <a href="https://github.com/42euge/geno-agents">GitHub</a></p>
+        </footer>
+    </div>
+</body>
+</html>
