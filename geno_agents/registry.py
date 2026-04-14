@@ -25,6 +25,9 @@ class Agent:
     status: str = "available"  # available, busy, offline
     last_seen: float = field(default_factory=time.time)
     registered_at: float = field(default_factory=time.time)
+    working_on: str = ""
+    using: list[str] = field(default_factory=list)
+    project: str = ""
 
 
 def _load() -> dict[str, dict]:
@@ -55,6 +58,19 @@ def unregister(session_id: str) -> bool:
         _save(data)
         return True
     return False
+
+
+def update(session_id: str, **fields) -> bool:
+    """Update specific fields on an agent's card. Returns False if not registered."""
+    data = _load()
+    if session_id not in data:
+        return False
+    for k, v in fields.items():
+        if v is not None:
+            data[session_id][k] = v
+    data[session_id]["last_seen"] = time.time()
+    _save(data)
+    return True
 
 
 def heartbeat(session_id: str, status: str | None = None) -> bool:

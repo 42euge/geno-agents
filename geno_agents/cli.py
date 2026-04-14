@@ -16,17 +16,16 @@ from geno_agents.registry import (
     prune_stale,
     register,
     unregister,
+    update,
 )
 
 
 def _detect_session_id() -> str | None:
     """Try to detect the current Claude Code session ID."""
     import os
-    # Claude Code sets CLAUDE_SESSION_ID in the environment
     sid = os.environ.get("CLAUDE_SESSION_ID")
     if sid:
         return sid
-    # Fallback: check if geno-msg can resolve it
     try:
         import subprocess
         result = subprocess.run(
@@ -50,8 +49,9 @@ def main():
 @click.argument("role")
 @click.option("--desc", "-d", default="", help="What this agent does")
 @click.option("--cap", "-c", multiple=True, help="Capability tags (repeatable)")
+@click.option("--project", "-p", default="", help="Project directory name")
 @click.option("--session-id", default=None, help="Session ID (auto-detected if omitted)")
-def register_cmd(role: str, desc: str, cap: tuple, session_id: str | None):
+def register_cmd(role: str, desc: str, cap: tuple, project: str, session_id: str | None):
     """Register this agent with a role."""
     if not session_id:
         session_id = _detect_session_id()
@@ -64,13 +64,14 @@ def register_cmd(role: str, desc: str, cap: tuple, session_id: str | None):
         role=role,
         description=desc,
         capabilities=list(cap),
+        project=project,
     )
     register(agent)
     click.echo(f"Registered: {role} ({session_id[:8]}...)")
 
 
 @main.command("unregister")
-@click.option("--session-id", default=None, help="Session ID (auto-detected if omitted)")
+@click.option("--session-id", default=None)
 def unregister_cmd(session_id: str | None):
     """Unregister this agent."""
     if not session_id:
@@ -78,11 +79,42 @@ def unregister_cmd(session_id: str | None):
     if not session_id:
         click.echo("Error: could not detect session ID.", err=True)
         sys.exit(1)
-
     if unregister(session_id):
         click.echo(f"Unregistered: {session_id[:8]}...")
     else:
         click.echo("Not found in registry.", err=True)
+
+
+@main.command("update")
+@click.option("--working-on", "-w", default=None, help="Current task description")
+@click.option("--using", "-u", multiple=True, help="Resources in use (repeatable, empty to clear)")
+@click.option("--status", "-s", type=click.Choice(["available", "busy"]), default=None)
+@click.option("--session-id", default=None)
+def update_cmd(working_on: str | None, using: tuple, status: str | None, session_id: str | None):
+    """Update this agent's card (working_on, using, status)."""
+    if not session_id:
+        session_id = _detect_session_id()
+    if not session_id:
+        click.echo("Error: could not detect session ID.", err=True)
+        sys.exit(1)
+
+    fields = {}
+    if working_on is not None:
+        fields["working_on"] = working_on
+    if using:
+        fields["using"] = [u for u in using if u]  # filter empty strings
+    if status:
+        fields["status"] = status
+
+    if not fields:
+        click.echo("Nothing to update.", err=True)
+        sys.exit(1)
+
+    if update(session_id, **fields):
+        click.echo(f"Updated: {session_id[:8]}...")
+    else:
+        click.echo("Not registered. Register first.", err=True)
+        sys.exit(1)
 
 
 @main.command("heartbeat")
@@ -125,7 +157,10 @@ def ls_cmd(as_json: bool, show_all: bool):
 
         status_icon = {"available": "🟢", "busy": "🟡", "stale": "⚪", "offline": "🔴"}.get(a.status, "❓")
         caps = f"  [{', '.join(a.capabilities)}]" if a.capabilities else ""
-        click.echo(f"  {status_icon} {a.session_id[:8]}  {a.role:<20} {seen:<10} {a.description}{caps}")
+        proj = f"  📁 {a.project}" if a.project else ""
+        task = f"  📋 {a.working_on}" if a.working_on else ""
+        res = f"  🔒 {', '.join(a.using)}" if a.using else ""
+        click.echo(f"  {status_icon} {a.session_id[:8]}  {a.role:<20} {seen:<10} {a.description}{caps}{proj}{task}{res}")
 
 
 @main.command("who")
@@ -135,7 +170,6 @@ def who_cmd(query: str):
     by_role = find_by_role(query)
     by_cap = find_by_capability(query)
 
-    # Deduplicate
     seen = set()
     results = []
     for a in by_role + by_cap:
@@ -149,7 +183,8 @@ def who_cmd(query: str):
 
     for a in results:
         caps = f"  [{', '.join(a.capabilities)}]" if a.capabilities else ""
-        click.echo(f"  {a.session_id[:8]}  {a.role:<20} {a.description}{caps}")
+        task = f"  📋 {a.working_on}" if a.working_on else ""
+        click.echo(f"  {a.session_id[:8]}  {a.role:<20} {a.description}{caps}{task}")
 
 
 @main.command("prune")
