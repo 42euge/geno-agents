@@ -1,0 +1,12 @@
+{
+  "name": "geno-agents",
+  "version": "0.1.0",
+  "description": "Agent coordination layer — registration, discovery, and presence for multi-agent systems",
+  "skills": {
+    "geno-agents": "skills/geno-agents"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/42euge/geno-agents"
+  }
+}
