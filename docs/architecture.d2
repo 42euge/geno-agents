@@ -1,6 +1,6 @@
 direction: down
 
-geno-agents: "geno-agents\nregistration · discovery · presence" {
+geno-agents: "geno-agents\nauto-registration · discovery · presence" {
   style: {
     fill: "#1c2128"
     stroke: "#a371f7"
@@ -9,6 +9,8 @@ geno-agents: "geno-agents\nregistration · discovery · presence" {
     font-color: "#a371f7"
     bold: true
   }
+
+  grid-columns: 4
 
   registry: "registry" {
     style: {
@@ -34,8 +36,44 @@ geno-agents: "geno-agents\nregistration · discovery · presence" {
       border-radius: 6
     }
   }
+  update: "update" {
+    style: {
+      fill: "#161b22"
+      stroke: "#a371f7"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+}
 
-  grid-columns: 3
+hooks: "hooks (automatic)" {
+  style: {
+    fill: "#1c2128"
+    stroke: "#f0883e"
+    stroke-width: 2
+    border-radius: 8
+    font-color: "#f0883e"
+    bold: true
+  }
+
+  grid-columns: 2
+
+  h1: "SessionStart\nauto-register" {
+    style: {
+      fill: "#161b22"
+      stroke: "#f0883e"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
+  h2: "PostToolUse\nheartbeat" {
+    style: {
+      fill: "#161b22"
+      stroke: "#f0883e"
+      font-color: "#e6edf3"
+      border-radius: 6
+    }
+  }
 }
 
 geno-msg: "geno-msg\nlightweight message transport" {
@@ -68,9 +106,9 @@ agents: "agents" {
     bold: true
   }
 
-  grid-columns: 5
+  grid-columns: 3
 
-  a: "agent A\nbenchmark" {
+  a: "agent A\nbenchmark\n📋 refactoring\n🔒 kaggle-api" {
     style: {
       fill: "#161b22"
       stroke: "#79c0ff"
@@ -78,15 +116,7 @@ agents: "agents" {
       border-radius: 6
     }
   }
-  ab: "⇄" {
-    style: {
-      fill: transparent
-      stroke: transparent
-      font-color: "#30363d"
-      font-size: 20
-    }
-  }
-  b: "agent B\nbrowser" {
+  b: "agent B\nbrowser\n📋 idle" {
     style: {
       fill: "#161b22"
       stroke: "#79c0ff"
@@ -94,15 +124,7 @@ agents: "agents" {
       border-radius: 6
     }
   }
-  bc: "⇄" {
-    style: {
-      fill: transparent
-      stroke: transparent
-      font-color: "#30363d"
-      font-size: 20
-    }
-  }
-  c: "agent C\nmessaging" {
+  c: "agent C\nmessaging\n📋 fixing race cond\n🔒 geno-msg repo" {
     style: {
       fill: "#161b22"
       stroke: "#79c0ff"
@@ -112,6 +134,14 @@ agents: "agents" {
   }
 }
 
+hooks -> geno-agents: "auto-populates" {
+  style: {
+    stroke: "#f0883e"
+    stroke-width: 2
+    font-color: "#8b949e"
+    font-size: 12
+  }
+}
 geno-agents -> geno-msg: {
   style: {
     stroke: "#30363d"

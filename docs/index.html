@@ -157,11 +157,12 @@ geno-agents who <code>"browser"</code></pre>
         <section>
             <h2><span>Commands</span></h2>
             <table class="cmd-table">
-                <tr><td>geno-agents register &lt;role&gt;</td><td>Register with a role, description, and capability tags</td></tr>
-                <tr><td>geno-agents unregister</td><td>Remove this agent from the registry</td></tr>
-                <tr><td>geno-agents ls</td><td>List all registered agents with roles and status</td></tr>
+                <tr><td>geno-agents register &lt;role&gt;</td><td>Register with a role, description, capabilities, and project</td></tr>
+                <tr><td>geno-agents update</td><td>Update agent card: --working-on, --using, --status</td></tr>
+                <tr><td>geno-agents ls</td><td>List all agents with roles, tasks, and resource usage</td></tr>
                 <tr><td>geno-agents who &lt;query&gt;</td><td>Find agents by role or capability</td></tr>
-                <tr><td>geno-agents heartbeat</td><td>Update presence (last seen, available/busy)</td></tr>
+                <tr><td>geno-agents heartbeat</td><td>Update presence (auto-runs via PostToolUse hook)</td></tr>
+                <tr><td>geno-agents unregister</td><td>Remove this agent from the registry</td></tr>
                 <tr><td>geno-agents prune</td><td>Remove stale agents not seen in 10+ minutes</td></tr>
             </table>
         </section>
@@ -170,28 +171,28 @@ geno-agents who <code>"browser"</code></pre>
             <h2><span>Roadmap</span></h2>
             <div class="grid">
                 <div class="card done">
-                    <h3><span class="icon">✓</span> Agent Registry</h3>
-                    <p>Register with role, description, and capabilities. Discover agents by role or capability.</p>
+                    <h3><span class="icon">✓</span> Rich Agent Cards</h3>
+                    <p>Role, capabilities, project, current task, resources in use — all in one card per agent.</p>
                 </div>
                 <div class="card done">
-                    <h3><span class="icon">✓</span> Presence</h3>
-                    <p>Heartbeat, available/busy status, stale agent pruning.</p>
+                    <h3><span class="icon">✓</span> Auto-Registration</h3>
+                    <p>SessionStart hook infers role from CLAUDE.md, detects MCPs as capabilities. Zero config.</p>
+                </div>
+                <div class="card done">
+                    <h3><span class="icon">✓</span> Live Presence</h3>
+                    <p>PostToolUse heartbeat keeps last_seen fresh. Stale agents auto-detected and prunable.</p>
+                </div>
+                <div class="card done">
+                    <h3><span class="icon">✓</span> Resource Awareness</h3>
+                    <p>Agents declare what they're using (browser, API). Others check before grabbing shared resources.</p>
                 </div>
                 <div class="card next">
                     <h3><span class="icon">→</span> Task Board</h3>
-                    <p>Shared task lifecycle — delegate, accept, track progress, complete. Contract-net style negotiation.</p>
-                </div>
-                <div class="card next">
-                    <h3><span class="icon">→</span> Auto-Registration</h3>
-                    <p>Claude Code hook to register on session start. Role inferred from CLAUDE.md or skill context.</p>
+                    <p>Post tasks with required capabilities. Agents claim tasks matching their skills.</p>
                 </div>
                 <div class="card future">
                     <h3><span class="icon">○</span> Shared Context</h3>
-                    <p>Project state document — goals, progress, who's editing what. The missing "blackboard."</p>
-                </div>
-                <div class="card future">
-                    <h3><span class="icon">○</span> Intent & Locks</h3>
-                    <p>Declare intent before editing files. Prevent conflicts between concurrent agents.</p>
+                    <p>Project-level state — goals, progress, decisions. The missing "blackboard."</p>
                 </div>
             </div>
         </section>
