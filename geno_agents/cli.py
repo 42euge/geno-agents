@@ -1,0 +1,159 @@
+"""CLI for agent coordination."""
+
+import json
+import sys
+import time
+
+import click
+
+from geno_agents.registry import (
+    Agent,
+    find_by_capability,
+    find_by_role,
+    get,
+    heartbeat,
+    list_agents,
+    prune_stale,
+    register,
+    unregister,
+)
+
+
+def _detect_session_id() -> str | None:
+    """Try to detect the current Claude Code session ID."""
+    import os
+    # Claude Code sets CLAUDE_SESSION_ID in the environment
+    sid = os.environ.get("CLAUDE_SESSION_ID")
+    if sid:
+        return sid
+    # Fallback: check if geno-msg can resolve it
+    try:
+        import subprocess
+        result = subprocess.run(
+            [sys.executable, "-m", "geno_msg.store", "--session-id"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+
+@click.group()
+def main():
+    """geno-agents — Agent coordination layer."""
+    pass
+
+
+@main.command()
+@click.argument("role")
+@click.option("--desc", "-d", default="", help="What this agent does")
+@click.option("--cap", "-c", multiple=True, help="Capability tags (repeatable)")
+@click.option("--session-id", default=None, help="Session ID (auto-detected if omitted)")
+def register_cmd(role: str, desc: str, cap: tuple, session_id: str | None):
+    """Register this agent with a role."""
+    if not session_id:
+        session_id = _detect_session_id()
+    if not session_id:
+        click.echo("Error: could not detect session ID. Pass --session-id explicitly.", err=True)
+        sys.exit(1)
+
+    agent = Agent(
+        session_id=session_id,
+        role=role,
+        description=desc,
+        capabilities=list(cap),
+    )
+    register(agent)
+    click.echo(f"Registered: {role} ({session_id[:8]}...)")
+
+
+@main.command("unregister")
+@click.option("--session-id", default=None, help="Session ID (auto-detected if omitted)")
+def unregister_cmd(session_id: str | None):
+    """Unregister this agent."""
+    if not session_id:
+        session_id = _detect_session_id()
+    if not session_id:
+        click.echo("Error: could not detect session ID.", err=True)
+        sys.exit(1)
+
+    if unregister(session_id):
+        click.echo(f"Unregistered: {session_id[:8]}...")
+    else:
+        click.echo("Not found in registry.", err=True)
+
+
+@main.command("heartbeat")
+@click.option("--status", type=click.Choice(["available", "busy"]), default=None)
+@click.option("--session-id", default=None)
+def heartbeat_cmd(status: str | None, session_id: str | None):
+    """Send a heartbeat (update last_seen)."""
+    if not session_id:
+        session_id = _detect_session_id()
+    if not session_id:
+        sys.exit(1)
+    heartbeat(session_id, status)
+
+
+@main.command("ls")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+@click.option("--all", "show_all", is_flag=True, help="Include stale agents")
+def ls_cmd(as_json: bool, show_all: bool):
+    """List registered agents."""
+    agents = list_agents(include_stale=show_all)
+
+    if as_json:
+        from dataclasses import asdict
+        click.echo(json.dumps([asdict(a) for a in agents], indent=2))
+        return
+
+    if not agents:
+        click.echo("No agents registered.")
+        return
+
+    now = time.time()
+    for a in agents:
+        age = int(now - a.last_seen)
+        if age < 60:
+            seen = f"{age}s ago"
+        elif age < 3600:
+            seen = f"{age // 60}m ago"
+        else:
+            seen = f"{age // 3600}h ago"
+
+        status_icon = {"available": "🟢", "busy": "🟡", "stale": "⚪", "offline": "🔴"}.get(a.status, "❓")
+        caps = f"  [{', '.join(a.capabilities)}]" if a.capabilities else ""
+        click.echo(f"  {status_icon} {a.session_id[:8]}  {a.role:<20} {seen:<10} {a.description}{caps}")
+
+
+@main.command("who")
+@click.argument("query")
+def who_cmd(query: str):
+    """Find agents by role or capability."""
+    by_role = find_by_role(query)
+    by_cap = find_by_capability(query)
+
+    # Deduplicate
+    seen = set()
+    results = []
+    for a in by_role + by_cap:
+        if a.session_id not in seen:
+            seen.add(a.session_id)
+            results.append(a)
+
+    if not results:
+        click.echo(f"No agents matching '{query}'.")
+        return
+
+    for a in results:
+        caps = f"  [{', '.join(a.capabilities)}]" if a.capabilities else ""
+        click.echo(f"  {a.session_id[:8]}  {a.role:<20} {a.description}{caps}")
+
+
+@main.command("prune")
+def prune_cmd():
+    """Remove stale agents from the registry."""
+    count = prune_stale()
+    click.echo(f"Pruned {count} stale agent(s).")
