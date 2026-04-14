@@ -1,0 +1,6 @@
+role: geno-agents-dev
+description: Agent coordination layer — registration, discovery, presence
+capabilities:
+  - coordination
+  - registry
+  - agent-framework
