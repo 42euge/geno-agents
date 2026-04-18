@@ -2,8 +2,9 @@
 name: geno-agents
 description: >-
   Agent coordination — register as an agent, see who's online, update status.
+  Also includes autonomous agent loops (supercharge).
   Use when user says /geno-agents, wants to register this session, check who's online,
-  or update what they're working on.
+  update what they're working on, or /gt-supercharge.
 allowed-tools: "Bash(~/.geno/venv/bin/geno-agents *) mcp__geno-agents__list_agents mcp__geno-agents__who mcp__geno-agents__whois mcp__geno-agents__update_agent mcp__geno-agents__register_agent"
 argument-hint: "[who|whois|ls|register|update|status] [args...]"
 ---
