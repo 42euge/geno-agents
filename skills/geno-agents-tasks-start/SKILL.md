@@ -1,5 +1,5 @@
 ---
-name: tasks-start
+name: geno-agents-tasks-start
 description: >-
   Pick up a task from the current workspace's geno-notes project scope,
   plan if needed, and start executing. Workspace-only — global-scope tasks

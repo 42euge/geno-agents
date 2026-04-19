@@ -1,21 +1,21 @@
 ---
-name: agents
+name: geno-agents
 description: >-
   Agent coordination — register as an agent, see who's online, update status.
   Also includes autonomous agent loops (supercharge).
   Use when user says /geno-agents, wants to register this session, check who's online,
   update what they're working on, or /gt-supercharge.
-allowed-tools: "Bash(~/.geno/venv/bin/geno-agents *) mcp__geno-agents__list_agents mcp__geno-agents__who mcp__geno-agents__whois mcp__geno-agents__update_agent mcp__geno-agents__register_agent"
+allowed-tools: "Bash(geno-agents *) mcp__geno-agents__list_agents mcp__geno-agents__who mcp__geno-agents__whois mcp__geno-agents__update_agent mcp__geno-agents__register_agent"
 argument-hint: "[who|whois|ls|register|update|status] [args...]"
 ---
 
 # geno-agents — Agent Coordination
 
 ```!
-which ~/.geno/venv/bin/geno-agents >/dev/null 2>&1 || echo "⚠️ geno-agents is not installed. Run: pip install -e ~/code-purp/geno-agents"
+which geno-agents >/dev/null 2>&1 || echo "⚠️ geno-agents CLI not on PATH. Run: geno-tools install agents"
 ```
 
-You have access to geno-agents MCP tools (`list_agents`, `who`, `update_agent`, `register_agent`) and the CLI at `~/.geno/venv/bin/geno-agents`.
+You have access to geno-agents MCP tools (`list_agents`, `who`, `update_agent`, `register_agent`) and the `geno-agents` CLI on PATH (installed by geno-tools).
 
 ## Commands
 
@@ -33,7 +33,7 @@ Show who this agent is — display the current session's agent card. Use the `wh
 ### `/geno-agents who-are`
 List all other agents in the network (excludes yourself). Run:
 ```bash
-~/.geno/venv/bin/geno-agents who-are --session-id "${CLAUDE_SESSION_ID:-}"
+geno-agents who-are --session-id "${CLAUDE_SESSION_ID:-}"
 ```
 
 ### `/geno-agents whois <query>`
@@ -45,7 +45,7 @@ Register this session as an agent with the given role. If a `.geno-agents` file 
 
 To register from `.geno-agents` file:
 ```bash
-~/.geno/venv/bin/geno-agents register "$(grep '^role:' .geno-agents | sed 's/^role: *//')" \
+geno-agents register "$(grep '^role:' .geno-agents | sed 's/^role: *//')" \
   --desc "$(grep '^description:' .geno-agents | sed 's/^description: *//')" \
   --project "$(basename $(pwd))" \
   --session-id "${CLAUDE_SESSION_ID:-}"
