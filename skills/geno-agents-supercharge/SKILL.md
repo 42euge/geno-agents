@@ -1,3 +1,14 @@
+---
+name: geno-agents-supercharge
+description: >-
+  Run an extended autonomous work session across benchmark tasks with
+  structured cycles of implementation, reflection, and research.
+  Use when the user says /gt-supercharge, /geno-agents-supercharge, or asks
+  for a long-running autonomous run across tasks.
+disable-model-invocation: true
+argument-hint: "[duration] [scope]  e.g. 'go!', '4h change_blindness', '12h all'"
+---
+
 # Supercharge — Long-Running Autonomous Agent Loop
 
 Run an extended autonomous work session across benchmark tasks with structured cycles of implementation, reflection, and research. Based on Anthropic's harness design patterns for long-running apps.

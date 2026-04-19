@@ -11,3 +11,6 @@ geno-agents = "geno_agents.cli:main"
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["geno_agents*"]
