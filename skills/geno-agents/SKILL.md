@@ -1,4 +1,5 @@
 ---
+name: geno-agents
 description: >-
   Agent coordination — register as an agent, see who's online, update status.
   Also includes autonomous agent loops (supercharge).
