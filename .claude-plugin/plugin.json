@@ -1,0 +1,8 @@
+{
+  "name": "geno-agents",
+  "description": "Agent coordination layer — registration, discovery, and role management",
+  "version": "0.1.0",
+  "author": {
+    "name": "42euge"
+  }
+}

@@ -1,10 +1,10 @@
 ---
-name: geno-agents-tasks-start
+name: tasks-start
 description: >-
   Pick up a task from the current workspace's geno-notes project scope,
   plan if needed, and start executing. Workspace-only — global-scope tasks
   are out of scope for v0.1.
-  Installed by geno-tools as the /gt-task-start slash command.
+  Installed by geno-tools as the /gt-tasks-start slash command.
 license: MIT
 metadata:
   author: 42euge
