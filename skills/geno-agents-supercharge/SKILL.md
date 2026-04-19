@@ -1,5 +1,4 @@
 ---
-name: geno-agents-supercharge
 description: >-
   Run an extended autonomous work session across benchmark tasks with
   structured cycles of implementation, reflection, and research.
