@@ -1,6 +1,6 @@
 # .geno-agents file spec
 
-A `.geno-agents` file at the root of a repo declares the agent identity for that project. When a Claude Code session starts in this directory, the auto-registration hook reads it and registers accordingly.
+A `.geno-agents` file at the root of a repo declares the agent identity for that project. When an agent session starts in this directory, the auto-registration hook reads it and registers accordingly.
 
 ## Format
 

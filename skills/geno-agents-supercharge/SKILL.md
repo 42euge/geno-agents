@@ -7,6 +7,10 @@ description: >-
   for a long-running autonomous run across tasks.
 disable-model-invocation: true
 argument-hint: "[duration] [scope]  e.g. 'go!', '4h change_blindness', '12h all'"
+license: MIT
+metadata:
+  author: 42euge
+  version: "0.1.0"
 ---
 
 # Supercharge — Long-Running Autonomous Agent Loop

@@ -7,6 +7,10 @@ description: >-
   update what they're working on, or /gt-supercharge.
 allowed-tools: "Bash(geno-agents *) mcp__geno-agents__list_agents mcp__geno-agents__who mcp__geno-agents__whois mcp__geno-agents__update_agent mcp__geno-agents__register_agent"
 argument-hint: "[who|whois|ls|register|update|status] [args...]"
+license: MIT
+metadata:
+  author: 42euge
+  version: "0.1.0"
 ---
 
 # geno-agents — Agent Coordination
