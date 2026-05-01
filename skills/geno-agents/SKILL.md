@@ -77,6 +77,10 @@ On session start, the `geno-agents-register.sh` hook automatically registers thi
 
 You can check if you're registered by running `/geno-agents status`.
 
+## Session ID environment variable
+
+The commands above use `$CLAUDE_SESSION_ID`, which is the session identifier set by Claude Code. Other coding agents (e.g., Gemini CLI, Cursor, Windsurf) may expose their session ID under a different environment variable. The `--session-id` flag accepts any string, so adapt the env var reference to match the agent in use. The Python CLI (`geno_agents/cli.py`) currently falls back to `CLAUDE_SESSION_ID` when no `--session-id` is provided; extending that fallback chain to other agents is tracked as a future improvement.
+
 ## `.geno-agents` File Format
 
 Projects declare their agent identity in a `.geno-agents` file at the repo root:
