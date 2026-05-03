@@ -5,12 +5,12 @@ A `.geno-agents` file at the root of a repo declares the agent identity for that
 ## Format
 
 ```yaml
-role: benchmark-agent
-description: Kaggle benchmark tasks and dataset creation
+role: dev-agent
+description: Feature development and code review
 capabilities:
-  - kaggle
-  - benchmarks
-  - notebooks
+  - coding
+  - testing
+  - review
 ```
 
 ## Fields
