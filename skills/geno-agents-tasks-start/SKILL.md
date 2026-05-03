@@ -13,7 +13,7 @@ metadata:
 
 # Start Task
 
-Pick up a task from this workspace's `geno-notes` project scope (`./geno/geno-notes/` in cwd or an ancestor) and start working on it.
+Pick up a task from this workspace's `geno-notes` project scope (discovered automatically by `geno-notes path --project`) and start working on it.
 
 **Workspace-only.** This skill does not read from or write to the global geno-notes scope. If the user wants to start a task that lives globally, they should either `geno-notes promote <task> --to project` first, or invoke it manually outside this skill.
 
@@ -33,7 +33,7 @@ Immediately check that a project scope exists:
 geno-notes path --project 2>/dev/null
 ```
 
-If the command exits non-zero (no `./geno/geno-notes/` in cwd or ancestors):
+If the command exits non-zero (no project scope found in cwd or ancestors):
 
 1. **Ask the user upfront** using `AskUserQuestion` with these options:
    - **Initialize here** — run `geno-notes init --project` in the current directory.
