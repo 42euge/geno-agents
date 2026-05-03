@@ -6,6 +6,10 @@ description: >-
   discovers tasks from geno-notes, TODOs, or user-specified goals.
 disable-model-invocation: true
 argument-hint: "[duration] [scope]  e.g. 'go!', '4h auth-refactor', '12h all'"
+license: MIT
+metadata:
+  author: 42euge
+  version: "0.2.0"
 ---
 
 # Supercharge — Long-Running Autonomous Agent Loop
