@@ -237,12 +237,12 @@ pip install -e geno-agents</pre>
                 <h2><code>.geno-agents</code> file</h2>
                 <p>Drop a <code>.geno-agents</code> file at the root of any repo to declare its agent identity. On session start, the hook reads it and auto-registers.</p>
 <pre><span class="comment"># .geno-agents</span>
-role: benchmark-agent
-description: Kaggle Learning Benchmark
+role: dev-agent
+description: Feature development and code review
 capabilities:
-  - kaggle
-  - benchmarks
-  - notebooks</pre>
+  - coding
+  - testing
+  - review</pre>
                 <p style="margin-top: 1rem;">No file? The hook falls back to inferring the role from <code>CLAUDE.md</code> and detecting MCP servers as capabilities.</p>
             </div>
         </section>

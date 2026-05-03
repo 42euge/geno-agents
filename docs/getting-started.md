@@ -39,11 +39,11 @@ Shows all registered agents with their roles, current tasks, and resource usage.
 Or use a `.geno-agents` file at the repo root for automatic registration on session start:
 
 ```yaml
-role: benchmark-agent
-description: Kaggle benchmark tasks and dataset creation
+role: dev-agent
+description: Feature development and code review
 capabilities:
-  - kaggle
-  - benchmarks
+  - coding
+  - testing
 ```
 
 ### Find an agent

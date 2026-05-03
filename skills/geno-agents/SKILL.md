@@ -63,7 +63,7 @@ After registering, confirm by showing the agent card via `list_agents`.
 ### `/geno-agents update`
 Update this agent's card. Parse the arguments for:
 - `--working-on "description"` — what you're currently doing
-- `--using resource` — shared resource you're using (browser, kaggle-api, etc.)
+- `--using resource` — shared resource you're using (browser, api, etc.)
 - `--status busy|available` — availability
 
 Use the `update_agent` MCP tool.
@@ -86,10 +86,10 @@ The commands above use `$CLAUDE_SESSION_ID`, which is the session identifier set
 Projects declare their agent identity in a `.geno-agents` file at the repo root:
 
 ```yaml
-role: benchmark-agent
-description: Kaggle Learning Benchmark — task creation and evaluation
+role: dev-agent
+description: Feature development and code review
 capabilities:
-  - kaggle
-  - benchmarks
-  - notebooks
+  - coding
+  - testing
+  - review
 ```
