@@ -1,5 +1,7 @@
 # geno-agents
 
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://42euge.github.io/geno-agents/)
+
 Agent coordination layer — registration, discovery, and presence for multi-agent systems.
 
 Provides a CLI, MCP server, and coding agent skills for managing agent identity, discovering peers by role or capability, and coordinating shared resource usage across concurrent agent sessions.
