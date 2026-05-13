@@ -1,15 +1,16 @@
 ---
 name: geno-agents-supercharge
 description: >-
-  Run an extended autonomous work session with structured cycles of
-  planning, implementation, and evaluation. Works in any workspace —
-  discovers tasks from geno-notes, TODOs, or user-specified goals.
+  Run an extended autonomous work session across benchmark tasks with
+  structured cycles of implementation, reflection, and research.
+  Use when the user says /gt-supercharge, /geno-agents-supercharge, or asks
+  for a long-running autonomous run across tasks.
 disable-model-invocation: true
-argument-hint: "[duration] [scope]  e.g. 'go!', '4h auth-refactor', '12h all'"
+argument-hint: "[duration] [scope]  e.g. 'go!', '4h change_blindness', '12h all'"
 license: MIT
 metadata:
   author: 42euge
-  version: "0.2.0"
+  version: "0.1.0"
 observability:
   success_signal: "all planned cycles completed (or early-stopped because tasks are healthy) with checkpoints and session log written"
   failure_signals:
@@ -30,13 +31,13 @@ observability:
 
 # Supercharge — Long-Running Autonomous Agent Loop
 
-Run an extended autonomous work session with structured cycles of planning, implementation, and evaluation. Works in any workspace — discovers tasks from geno-notes, scans for TODOs, or accepts user-specified goals. Based on Anthropic's harness design patterns for long-running apps.
+Run an extended autonomous work session across benchmark tasks with structured cycles of implementation, reflection, and research. Based on Anthropic's harness design patterns for long-running apps.
 
 ## Input
 
 `$ARGUMENTS` — Optional directives. Examples:
-- `go!` — Start with defaults (8 hours, all discovered tasks)
-- `4h auth-refactor` — 4 hours focused on one area
+- `go!` — Start with defaults (8 hours, all tasks)
+- `4h change_blindness` — 4 hours on one task
 - `12h all` — Maximum duration across everything
 
 If no arguments, ask the user for duration and scope.
@@ -67,26 +68,23 @@ Map the requested duration to cycle counts. Each cycle is ~30 minutes of wall ti
 Three specialized agent roles cycle through work:
 
 ### Planner (runs at start and every 4 cycles)
-- Reads current task state via `geno-notes list --project --json`
-- Reads CLAUDE.md / CLAUDE.local.md for project conventions
-- Checks `git status` and recent history for in-flight work
-- Reviews any existing plans and previous checkpoint findings
-- Prioritizes tasks from the backlog and writes a sprint plan to `checkpoints/sprint_<n>.md`
-- Considers: which tasks are blocked? which are highest priority? which have failing tests? what does the user care about most?
+- Reads current state of all tasks (notebooks, reviews, results)
+- Reads CLAUDE.md and any existing reviews
+- Prioritizes what to work on next
+- Writes a sprint plan to `checkpoints/sprint_<n>.md`
+- Considers: which tasks have errors? which lack discriminatory power? which need more items? which haven't been run yet?
 
 ### Implementer (runs most cycles)
-- Picks up tasks from the sprint plan
-- Does the actual work: code changes, file edits, running commands, fixing tests
-- After each meaningful change, commits to git with a descriptive message
-- Logs progress via `geno-notes note "<cycle N: summary of what was done>"`
+- Picks up the sprint plan
+- Does the actual work: fixes bugs, improves scoring, adds passages, refactors prompts
+- After each change, updates the notebook timestamp and pushes to GitHub
 - Writes a brief handoff note to `checkpoints/impl_<cycle>.md`
 
 ### Evaluator (runs every 2-3 cycles)
-- Checks: do tests pass? does the build succeed? does `git diff` look right?
-- Reviews whether acceptance criteria from the sprint plan are met
-- Runs any project-specific validation (linters, type checks, integration tests)
-- Compares current state against the sprint plan goals
-- Writes evaluation to `checkpoints/eval_<cycle>.md`
+- Pulls latest results from Kaggle using `/gt-kaggle-benchmarks-task-review`
+- If no new results, checks if a run is in progress or needs to be triggered
+- Compares results against previous runs
+- Writes evaluation to the task's `review/` folder
 - Feeds findings back into the next planner cycle
 
 ## Cycle Structure
@@ -103,7 +101,6 @@ Each cycle follows this pattern:
    - What to do next
    - Any blockers or surprises
 5. LOG to session.md
-6. LOG milestone to geno-notes via `geno-notes note`
 ```
 
 ### Role Rotation
@@ -112,7 +109,7 @@ Default rotation pattern per 4-cycle sprint:
 1. **Plan** — assess state, set priorities
 2. **Implement** — work on highest priority item
 3. **Implement** — continue or move to next item
-4. **Evaluate** — check results, review, adjust
+4. **Evaluate** — pull results, review, adjust
 
 ### Context Management
 
@@ -122,16 +119,6 @@ To handle long runs without context degradation:
 - The session log is append-only and provides full history
 - If a cycle's agent runs into context limits, it writes a checkpoint and the next cycle picks up
 
-## Task Discovery
-
-Tasks are discovered in priority order:
-
-1. **geno-notes project scope** — `geno-notes list --project --status backlog --json` for backlog tasks; `geno-notes list --project --status in-progress --json` for in-flight work
-2. **User-specified goals** — if the user provided a scope in `$ARGUMENTS`, treat it as the primary objective
-3. **Code scanning** — search for `TODO`, `FIXME`, `HACK`, `XXX` comments in the codebase as supplementary work items
-4. **Git state** — check for uncommitted changes, unfinished merges, or stale branches that need attention
-5. **Ask the user** — if none of the above yields actionable work, ask what to focus on
-
 ## Execution
 
 ### Startup
@@ -139,31 +126,29 @@ Tasks are discovered in priority order:
 1. Parse duration and scope from `$ARGUMENTS`
 2. Create session directory: `geno-agents/supercharge/sessions/<YYYYMMDD-HHMM>/`
 3. Read current state:
-   - Discover tasks via geno-notes (`geno-notes list --project --json`)
-   - Check `git status` and `git log --oneline -10` for recent activity
-   - Scan for TODOs/FIXMEs if no geno-notes tasks exist
-   - Read CLAUDE.md for project conventions and constraints
+   - List all tasks in `tasks/`
+   - Check which have Kaggle kernels (via `kaggle kernels list`)
+   - Check which have reviews
+   - Read CLAUDE.md for architecture rules
 4. Write initial checkpoint with full state assessment
 5. Write session header to `session.md`
-6. Log session start via `geno-notes note "supercharge session started: <duration>, <scope>"`
 
 ### Main Loop
 
 For each cycle (1 to N):
 1. Read the latest checkpoint
-2. Determine the role based on rotation + needs (e.g., if tests are failing, prioritize fixing them)
+2. Determine the role based on rotation + needs (e.g., if an error was found, prioritize fixing it)
 3. Launch an Agent with the role's instructions and the checkpoint content
 4. The agent does its work and writes the next checkpoint
 5. Append cycle summary to session.md
-6. If the agent reports "all tasks are complete and no more work needed", stop early
+6. If the agent reports "all tasks are in good shape and no more work needed", stop early
 
 ### Shutdown
 
 After all cycles or early stop:
 1. Write final summary to `session.md`
 2. Write final state to `~/.geno/supercharge/state.json`
-3. Log completion via `geno-notes note "supercharge session complete: <summary>"`
-4. Report to user what was accomplished
+3. Report to user what was accomplished
 
 ## Checkpoint Format
 
@@ -176,11 +161,11 @@ After all cycles or early stop:
 <What the last cycle did, in 2-3 sentences>
 
 ## Task States
-| Task | Source | Status | Key Issue | Priority |
-|------|--------|--------|-----------|----------|
-| fix auth middleware | geno-notes | in-progress | token refresh failing | P1 |
-| add rate limiting | geno-notes | backlog | not started | P2 |
-| TODO: remove deprecated API | code scan | backlog | in api/v1/routes.py:42 | P3 |
+| Task | Status | Last Run | Key Issue | Priority |
+|------|--------|----------|-----------|----------|
+| change_blindness | needs-rerun | 2026-03-31 04:15 UTC | scoring too strict | P1 |
+| attentional_blink | not-linked | never | needs Kaggle task created | P2 |
+| ... | ... | ... | ... | ... |
 
 ## Current Sprint Plan
 <What we're working on this sprint>
@@ -200,18 +185,16 @@ After all cycles or early stop:
 - If a cycle fails, the next cycle reads the last successful checkpoint and retries
 - If the same action fails 3 times, skip it and move to the next priority
 - If `git push` fails, investigate rather than retry blindly
-- If tests fail after a change, revert the change and try a different approach
-- If an external tool or API errors, note it and move to work that doesn't depend on it
+- If Kaggle API errors, note it and move to implementation work that doesn't need results
 - Never force-push or do destructive git operations
 
 ## What NOT to Do
 
 - Don't spend multiple cycles on the same issue without trying a different approach
-- Don't push broken code — run tests and verify changes make sense before committing
-- Don't ignore CLAUDE.md rules — they exist for a reason
-- Don't create large, sweeping changes in a single cycle — prefer small, incremental commits
-- Don't skip the evaluation phase — it catches issues before they compound
-- Don't modify files outside the project scope without explicit user permission
+- Don't create new tasks without using `/gt-kaggle-benchmarks-task-generate`
+- Don't modify notebooks without updating the timestamp
+- Don't push broken code — verify changes make sense before committing
+- Don't ignore CLAUDE.md rules (self-contained notebooks, llm as list, etc.)
 
 ## Completion
 
@@ -226,5 +209,5 @@ geno-trace emit \
 ```
 
 - `success` = all planned cycles completed (or early-stopped because all tasks are healthy) with session log and final checkpoint written
-- `failure` = loop terminated due to repeated cycle failures, unrecoverable errors, or no forward progress after 3 retries
+- `failure` = loop terminated due to repeated cycle failures, unrecoverable git/Kaggle errors, or no forward progress after 3 retries
 - `abandoned` = user stopped early
