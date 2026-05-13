@@ -7,8 +7,9 @@ Agent coordination layer — registration, discovery, and presence for multi-age
 | Skill | Sub-skillset | Slash command |
 |-------|-------------|---------------|
 | geno-agents | — | — (umbrella) |
-| geno-agents-supercharge | — | /geno-agents-supercharge |
 | geno-agents-tasks-start | — | /geno-agents-tasks-start |
+
+> **Extracted:** `geno-agents-supercharge` moved to [geno-loops](https://github.com/42euge/geno-loops) as `geno-loops-supercharge`. The copy in this repo is kept for backwards compatibility.
 
 ## Repo structure
 
