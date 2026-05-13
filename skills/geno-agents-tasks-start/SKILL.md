@@ -9,6 +9,20 @@ license: MIT
 metadata:
   author: 42euge
   version: "0.3.0"
+observability:
+  success_signal: "task marked done via geno-notes with milestone journal entry summarizing what was accomplished"
+  failure_signals:
+    - "no project scope found and user aborts initialization"
+    - "task execution blocked and user cannot resolve blocker"
+    - "geno-notes CLI errors prevent task state transitions"
+  knowledge_reads:
+    - "geno-notes project-scope task list (active + backlog)"
+    - "CLAUDE.md / project instructions for project context"
+    - "task details via geno-notes show"
+  knowledge_writes:
+    - "geno-notes journal entries (milestone, finding, bug, decision)"
+    - "plan file at geno-notes path/plans/<task-id>.md (medium/large tasks)"
+    - "task status transitions (backlog -> active -> done)"
 ---
 
 # Start Task
@@ -114,3 +128,19 @@ Then tell the user what was accomplished and suggest what to start next:
 ```bash
 geno-notes list --project --status backlog
 ```
+
+## Completion
+
+When this skill finishes, emit a trace:
+
+```bash
+geno-trace emit \
+  --skill geno-agents-tasks-start \
+  --status <success|failure|abandoned> \
+  --tool-calls <approximate count> \
+  --errors <count of tool/command errors>
+```
+
+- `success` = task marked done via `geno-notes done` with a summary milestone logged
+- `failure` = task could not be completed due to unresolved blocker, missing project scope (user aborted), or repeated CLI errors
+- `abandoned` = user stopped early

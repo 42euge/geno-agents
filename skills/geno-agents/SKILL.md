@@ -11,6 +11,17 @@ license: MIT
 metadata:
   author: 42euge
   version: "0.1.0"
+observability:
+  success_signal: "agent network status displayed, agent registered, or agent card updated"
+  failure_signals:
+    - "geno-agents CLI not on PATH"
+    - "MCP tools unavailable (list_agents, register_agent, etc.)"
+    - "agent registry unreachable or corrupted"
+  knowledge_reads:
+    - "~/.geno/geno-agents/ (agent registry state)"
+    - ".geno-agents (project-level agent identity file)"
+  knowledge_writes:
+    - "~/.geno/geno-agents/ (agent registration and status updates)"
 ---
 
 # geno-agents — Agent Coordination
