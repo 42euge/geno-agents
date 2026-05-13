@@ -10,6 +10,22 @@ license: MIT
 metadata:
   author: 42euge
   version: "0.2.0"
+observability:
+  success_signal: "all planned cycles completed (or early-stopped because tasks are healthy) with checkpoints and session log written"
+  failure_signals:
+    - "cycle agent crashes repeatedly and no checkpoint is written"
+    - "same action fails 3+ times without forward progress"
+    - "git push or Kaggle API errors block all remaining work"
+  knowledge_reads:
+    - "task notebooks and reviews in tasks/"
+    - "CLAUDE.md for architecture rules"
+    - "~/.geno/supercharge/state.json (cross-session memory)"
+    - "previous cycle checkpoints"
+  knowledge_writes:
+    - "session log at geno-agents/supercharge/sessions/<timestamp>/session.md"
+    - "cycle checkpoints at geno-agents/supercharge/sessions/<timestamp>/checkpoints/"
+    - "~/.geno/supercharge/state.json (updated cross-session memory)"
+    - "task reviews in tasks/<task>/review/"
 ---
 
 # Supercharge — Long-Running Autonomous Agent Loop
@@ -196,3 +212,19 @@ After all cycles or early stop:
 - Don't create large, sweeping changes in a single cycle — prefer small, incremental commits
 - Don't skip the evaluation phase — it catches issues before they compound
 - Don't modify files outside the project scope without explicit user permission
+
+## Completion
+
+When this skill finishes, emit a trace:
+
+```bash
+geno-trace emit \
+  --skill geno-agents-supercharge \
+  --status <success|failure|abandoned> \
+  --tool-calls <approximate count> \
+  --errors <count of tool/command errors>
+```
+
+- `success` = all planned cycles completed (or early-stopped because all tasks are healthy) with session log and final checkpoint written
+- `failure` = loop terminated due to repeated cycle failures, unrecoverable errors, or no forward progress after 3 retries
+- `abandoned` = user stopped early
