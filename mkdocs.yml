@@ -1,6 +1,6 @@
 site_name: geno-agents
-site_description: Agent coordination layer — registration, discovery, and presence for multi-agent systems
-site_url: https://42euge.github.io/geno-agents
+site_description: Agent coordination — registration, discovery, presence
+site_url: https://42euge.github.io/geno-agents/
 repo_url: https://github.com/42euge/geno-agents
 repo_name: 42euge/geno-agents
 
@@ -27,16 +27,23 @@ theme:
   icon:
     repo: fontawesome/brands/github
   features:
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.top
     - content.code.copy
+    - content.code.annotate
     - search.highlight
+    - search.suggest
     - toc.follow
 
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - ".geno-agents file": agent-file.md
+  - .geno-agents file: agent-file.md
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - admonition
@@ -48,5 +55,13 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
   - attr_list
+  - md_in_html
+  - def_list
   - toc:
       permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/42euge
+  generator: false
