@@ -3,7 +3,7 @@ name: geno-agents-supercharge
 description: >-
   Run an extended autonomous work session across benchmark tasks with
   structured cycles of implementation, reflection, and research.
-  Use when the user says /gt-supercharge, /geno-agents-supercharge, or asks
+  Use when the user says /geno-agents-supercharge, /geno-agents-supercharge, or asks
   for a long-running autonomous run across tasks.
 disable-model-invocation: true
 argument-hint: "[duration] [scope]  e.g. 'go!', '4h change_blindness', '12h all'"
@@ -11,6 +11,22 @@ license: MIT
 metadata:
   author: 42euge
   version: "0.1.0"
+observability:
+  success_signal: "all planned cycles completed (or early-stopped because tasks are healthy) with checkpoints and session log written"
+  failure_signals:
+    - "cycle agent crashes repeatedly and no checkpoint is written"
+    - "same action fails 3+ times without forward progress"
+    - "git push or Kaggle API errors block all remaining work"
+  knowledge_reads:
+    - "task notebooks and reviews in tasks/"
+    - "CLAUDE.md for architecture rules"
+    - "~/.geno/supercharge/state.json (cross-session memory)"
+    - "previous cycle checkpoints"
+  knowledge_writes:
+    - "session log at geno-agents/supercharge/sessions/<timestamp>/session.md"
+    - "cycle checkpoints at geno-agents/supercharge/sessions/<timestamp>/checkpoints/"
+    - "~/.geno/supercharge/state.json (updated cross-session memory)"
+    - "task reviews in tasks/<task>/review/"
 ---
 
 # Supercharge — Long-Running Autonomous Agent Loop
@@ -65,7 +81,7 @@ Three specialized agent roles cycle through work:
 - Writes a brief handoff note to `checkpoints/impl_<cycle>.md`
 
 ### Evaluator (runs every 2-3 cycles)
-- Pulls latest results from Kaggle using `/gt-kaggle-benchmarks-task-review`
+- Pulls latest results from Kaggle using `/geno-kaggle-benchmarks-task-review`
 - If no new results, checks if a run is in progress or needs to be triggered
 - Compares results against previous runs
 - Writes evaluation to the task's `review/` folder
@@ -175,7 +191,23 @@ After all cycles or early stop:
 ## What NOT to Do
 
 - Don't spend multiple cycles on the same issue without trying a different approach
-- Don't create new tasks without using `/gt-kaggle-benchmarks-task-generate`
+- Don't create new tasks without using `/geno-kaggle-benchmarks-task-generate`
 - Don't modify notebooks without updating the timestamp
 - Don't push broken code — verify changes make sense before committing
 - Don't ignore CLAUDE.md rules (self-contained notebooks, llm as list, etc.)
+
+## Completion
+
+When this skill finishes, emit a trace:
+
+```bash
+geno-trace emit \
+  --skill geno-agents-supercharge \
+  --status <success|failure|abandoned> \
+  --tool-calls <approximate count> \
+  --errors <count of tool/command errors>
+```
+
+- `success` = all planned cycles completed (or early-stopped because all tasks are healthy) with session log and final checkpoint written
+- `failure` = loop terminated due to repeated cycle failures, unrecoverable git/Kaggle errors, or no forward progress after 3 retries
+- `abandoned` = user stopped early
