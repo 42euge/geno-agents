@@ -32,6 +32,10 @@ geno-agents/
 └── docs/                # documentation site
 ```
 
+### Versioning
+
+- **Versioning**: bump the version in `genotools.yaml` (and `pyproject.toml` / `package.json` if present) whenever a skill is added, removed, or its behavior changes.
+
 ## Architecture
 
 ### Registry
@@ -56,3 +60,18 @@ Projects declare agent identity via a `.geno-agents` YAML file at the repo root.
 - Agent data lives at `~/.geno/agents/` — never committed.
 - Agents are identified by session ID and expire after 10 minutes without a heartbeat.
 - The `who-are` command excludes the calling session; `ls` includes all agents.
+
+### Prefix aliasing
+
+Source code and documentation use the canonical `geno-` prefix (e.g., `geno-agents`, `/geno-agents-supercharge`). Short `gt-*` aliases are configured per-install by `geno-tools` and are not defined in this repo. When adding new skills or commands, always use the canonical `geno-agents` prefix; the installer handles alias generation.
+
+### Adding a new skill
+
+To add a new skill to the geno-agents skillset:
+
+1. Create a directory under `skills/<skill-name>/` with a `SKILL.md` file containing YAML front-matter (`name`, `description`, `allowed-tools`, `license`, `metadata`) and usage instructions.
+2. Register the skill in the `Skills` table in this file (`GENO.md`).
+3. Add the skill to the `Available skills` table in the umbrella `SKILL.md`.
+4. If the skill needs new CLI subcommands, add them in `geno_agents/cli.py`.
+5. If the skill needs new MCP tools, add them in `geno_agents/mcp_server.py` and list them in the `allowed-tools` front-matter field.
+6. Update `genotools.yaml` with the new skill entry so `geno-tools install` picks it up.
