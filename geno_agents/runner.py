@@ -275,27 +275,36 @@ def _status_from_stream_json(buf: bytes) -> str:
             ev = json.loads(ln)
         except Exception:
             continue
+        # Anthropic streaming wraps raw SSE events as {"type":"stream_event","event":{…}}
+        if ev.get("type") == "stream_event" and isinstance(ev.get("event"), dict):
+            ev = ev["event"]
         t = ev.get("type", "")
         if t == "result":
             return (ev.get("result") or "completed")[:80]
-        # assistant message with content blocks
-        msg = ev.get("message") or ev.get("delta") or {}
+        # partial text delta (streaming)
+        if t == "content_block_delta":
+            d = ev.get("delta", {}) or {}
+            if d.get("type") == "text_delta" and d.get("text", "").strip():
+                last_msg = d["text"].strip().split("\n")[0][:80]
+            continue
+        # tool_use start block → what Claude is doing
+        if t == "content_block_start":
+            blk = ev.get("content_block", {}) or {}
+            if blk.get("type") == "tool_use":
+                last_msg = f"using {blk.get('name', 'tool')}"
+            continue
+        # full assistant message with content blocks
+        msg = ev.get("message") or {}
         content = msg.get("content") if isinstance(msg, dict) else None
         if isinstance(content, list):
             for block in content:
                 bt = block.get("type", "")
                 if bt == "tool_use":
-                    tool = block.get("name", "tool")
-                    last_msg = f"using {tool}"
+                    last_msg = f"using {block.get('name', 'tool')}"
                 elif bt == "text" and block.get("text", "").strip():
                     last_msg = block["text"].strip().split("\n")[0][:80]
         elif isinstance(content, str) and content.strip():
             last_msg = content.strip().split("\n")[0][:80]
-        # partial text delta
-        if t in ("content_block_delta", "text_delta"):
-            d = ev.get("delta", {})
-            if isinstance(d, dict) and d.get("text", "").strip():
-                last_msg = d["text"].strip().split("\n")[0][:80]
     return last_msg
 
 
