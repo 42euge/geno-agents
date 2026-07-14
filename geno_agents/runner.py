@@ -164,9 +164,12 @@ def prune_agents(max_age_hours: float = 24.0, keep_running: bool = True,
         age_h = (now - p.stat().st_mtime) / 3600
         stale = age_h > max_age_hours
         finished = status in ("done", "error")
-        if finished or stale:
-            if keep_running and status == "running" and not stale:
-                continue
+        # Decide whether to prune:
+        #   finished (done/error)          -> always
+        #   stale (older than max_age)     -> always
+        #   running & not keep_running     -> prune (explicit `prune --all`)
+        should_prune = finished or stale or (status == "running" and not keep_running)
+        if should_prune:
             agent_id = data.get("id", p.stem)
             p.unlink(missing_ok=True)
             (d / f"{agent_id}.log").unlink(missing_ok=True)
