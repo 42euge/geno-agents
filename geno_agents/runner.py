@@ -104,11 +104,78 @@ def list_agents() -> list[dict]:
     d = _agents_dir()
     agents = []
     for p in sorted(d.glob("*.json")):
+        if p.name == "registry.json":   # peer-coordination file, different schema
+            continue
         try:
-            agents.append(json.loads(p.read_text()))
+            data = json.loads(p.read_text())
+            if "id" in data and "status" in data:   # only per-run agent files
+                agents.append(data)
         except Exception:
             pass
     return agents
+
+
+def _close_cmd_tabs(names: list[str]) -> None:
+    """Close any iTerm tabs whose session name matches one of `names`
+    (e.g. leftover 'geno.tasks.cmd.<x>' tabs for finished agents)."""
+    if not names:
+        return
+    conds = " or ".join(f'nm contains "{n}"' for n in names)
+    script = f'''
+    tell application "iTerm2"
+      repeat with w in windows
+        repeat with t in tabs of w
+          repeat with s in sessions of t
+            set nm to name of s
+            if {conds} then
+              try
+                close t
+              end try
+            end if
+          end repeat
+        end repeat
+      end repeat
+    end tell
+    '''
+    try:
+        subprocess.run(["osascript", "-e", script], capture_output=True, timeout=5)
+    except Exception:
+        pass
+
+
+def prune_agents(max_age_hours: float = 24.0, keep_running: bool = True,
+                 close_tabs: bool = True) -> list[str]:
+    """Remove finished (done/error) agent files, and stale ones whose process is
+    gone. Returns the list of pruned agent ids. Called automatically by `ls` so
+    the registry self-heals; also exposed as `geno-agent prune`.
+
+    If close_tabs, also closes any leftover iTerm cmd tabs for pruned agents."""
+    d = _agents_dir()
+    pruned = []
+    now = time.time()
+    for p in sorted(d.glob("*.json")):
+        if p.name == "registry.json":
+            continue
+        try:
+            data = json.loads(p.read_text())
+        except Exception:
+            continue
+        status = data.get("status", "")
+        age_h = (now - p.stat().st_mtime) / 3600
+        stale = age_h > max_age_hours
+        finished = status in ("done", "error")
+        if finished or stale:
+            if keep_running and status == "running" and not stale:
+                continue
+            agent_id = data.get("id", p.stem)
+            p.unlink(missing_ok=True)
+            (d / f"{agent_id}.log").unlink(missing_ok=True)
+            pruned.append(agent_id)
+    if close_tabs and pruned:
+        # Match on the command-name portion of the agent id (before the timestamp)
+        names = [aid.rsplit("-", 2)[0] for aid in pruned]
+        _close_cmd_tabs(list(set(names)))
+    return pruned
 
 
 def wait_for_agent(agent_id: str, timeout: float = 300.0, poll: float = 2.0) -> dict | None:
@@ -119,6 +186,30 @@ def wait_for_agent(agent_id: str, timeout: float = 300.0, poll: float = 2.0) -> 
             return data
         time.sleep(poll)
     return None
+
+
+def _pretrust_claude_dir(cwd: str) -> None:
+    """Pre-accept Claude Code's folder-trust dialog for cwd so an interactive
+    session launched by geno-agent doesn't block on 'Do you trust this folder?'
+    (nobody is at the keyboard to press Enter). Idempotent, best-effort."""
+    cfg = Path.home() / ".claude.json"
+    try:
+        data = json.loads(cfg.read_text()) if cfg.exists() else {}
+    except Exception:
+        return
+    projects = data.setdefault("projects", {})
+    entry = projects.setdefault(cwd, {})
+    changed = False
+    for key, val in (("hasTrustDialogAccepted", True),
+                     ("hasCompletedProjectOnboarding", True)):
+        if entry.get(key) != val:
+            entry[key] = val
+            changed = True
+    if changed:
+        try:
+            cfg.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
 
 
 def _close_own_iterm_tab() -> None:
@@ -195,6 +286,10 @@ def run_agent_pty(agent_id: str, cmd: list[str], source_file: str = "",
     log_path = Path(log_file) if log_file else _log_path(agent_id)
     write_status(agent_id, "running", "starting…",
                  source_file=source_file, output_file=output_file)
+
+    # Pre-accept Claude's folder-trust dialog for our cwd so the interactive
+    # session doesn't hang waiting for a keypress nobody will give.
+    _pretrust_claude_dir(os.getcwd())
 
     # Fork a child attached to a new PTY
     pid, master_fd = pty.fork()
@@ -409,7 +504,15 @@ def main(argv: list[str] | None = None) -> int:
     p_status.add_argument("agent_id", nargs="?", default=None)
 
     # ls
-    sub.add_parser("ls", help="list all agents")
+    p_ls = sub.add_parser("ls", help="list all agents")
+    p_ls.add_argument("--all", action="store_true",
+                      help="don't auto-prune finished agents before listing")
+
+    # prune
+    p_prune = sub.add_parser("prune", help="remove finished/stale agent files + logs")
+    p_prune.add_argument("--max-age-hours", type=float, default=24.0)
+    p_prune.add_argument("--all", action="store_true",
+                         help="also remove running agents older than max-age")
 
     # wait
     p_wait = sub.add_parser("wait", help="block until agent finishes")
@@ -454,6 +557,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     elif args.cmd == "ls":
+        # Self-heal: auto-prune finished agents unless --all is passed, so the
+        # registry doesn't accumulate done/error entries across runs.
+        if not args.all:
+            prune_agents(keep_running=True)
         agents = list_agents()
         if not agents:
             print("no agents")
@@ -462,6 +569,15 @@ def main(argv: list[str] | None = None) -> int:
             status = a.get("status", "?")
             msg = a.get("message", "")[:50]
             print(f"  {a['id']:<40} {status:<8} {msg}")
+        return 0
+
+    elif args.cmd == "prune":
+        pruned = prune_agents(max_age_hours=args.max_age_hours,
+                              keep_running=not args.all)
+        if pruned:
+            print(f"pruned {len(pruned)} agent(s): {', '.join(pruned)}")
+        else:
+            print("nothing to prune")
         return 0
 
     elif args.cmd == "wait":
