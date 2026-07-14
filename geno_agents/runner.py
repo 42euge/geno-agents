@@ -247,22 +247,40 @@ def _close_own_iterm_tab() -> None:
         pass
 
 
+_DECO = set("─│╭╮╰╯━┃┏┓┗┛ >·•*✳✽✻✢✶✷◐◓◑◒⎿⏺●○")
+
+
+def _looks_like_words(ln: str) -> bool:
+    """True if the line reads like real prose: has at least two space-separated
+    tokens that are mostly alphabetic. Rejects TUI-redraw fragments where the
+    screen is mid-repaint (e.g. 'stng26', 'tig…', 'esin25')."""
+    words = [w for w in re.split(r"\s+", ln) if len(w) >= 2]
+    alpha_words = [w for w in words if sum(c.isalpha() for c in w) >= len(w) * 0.7]
+    return len(alpha_words) >= 2
+
+
 def _last_meaningful_line(buf: bytes) -> str:
-    """Extract the last non-empty human-readable line from a PTY byte buffer."""
+    """Extract the last human-readable STATUS line from a PTY byte buffer.
+
+    Claude Code prints its working status as bulleted lines (e.g.
+    '⏺ Implementing…', '* Verifying…'). We strip the bullet/decoration, then
+    require the remainder to read like real words, so mid-repaint fragments
+    are ignored."""
     text = _ANSI.sub(b"", buf).decode("utf-8", errors="replace")
     lines = [ln.strip() for ln in text.replace("\r", "\n").split("\n")]
     for ln in reversed(lines):
-        if len(ln) <= 2:
+        if len(ln) <= 3:
             continue
-        # Skip box-drawing / prompt-decoration-only lines
-        if all(c in "─│╭╮╰╯━┃┏┓┗┛ >·•*✳✽✻✢·" for c in ln):
+        # Strip leading bullet/decoration glyphs
+        core = ln.lstrip("".join(_DECO)).strip()
+        if len(core) <= 3:
             continue
-        # Require the line to be mostly letters (rejects leftover escape cruft
-        # like "[>0q[?2026$p" which is symbols/digits only)
-        letters = sum(c.isalpha() or c.isspace() for c in ln)
-        if letters < max(3, len(ln) * 0.5):
+        # Skip decoration-only lines
+        if all(c in _DECO for c in ln):
             continue
-        return ln[:80]
+        if not _looks_like_words(core):
+            continue
+        return core[:80]
     return ""
 
 
@@ -330,17 +348,26 @@ def run_agent_pty(agent_id: str, cmd: list[str], source_file: str = "",
     except Exception:
         pass
 
-    # Status ticker: every 2s parse the ring buffer for the latest line
+    # Status ticker: every 2s parse the ring buffer for the latest line.
+    # Also watches for a self-signalled done/error (Claude runs `geno-agent done`)
+    # — an interactive Claude never exits on its own, so that signal is our cue
+    # to end the session: terminate the child, which unblocks the relay loop.
     stop = threading.Event()
 
     def _ticker():
         while not stop.wait(2):
+            cur = read_status(agent_id)
+            if cur and cur.get("status") in ("done", "error"):
+                # Agent signalled completion itself. Give the screen a beat,
+                # then end the PTY child so the relay loop exits and we tear down.
+                time.sleep(1)
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except Exception:
+                    pass
+                return
             msg = _last_meaningful_line(bytes(ring))
             if msg:
-                # don't clobber a self-signalled done/error
-                cur = read_status(agent_id)
-                if cur and cur.get("status") in ("done", "error"):
-                    return
                 write_status(agent_id, "running", msg,
                              source_file=source_file, output_file=output_file)
     threading.Thread(target=_ticker, daemon=True).start()
