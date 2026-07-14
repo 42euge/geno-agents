@@ -259,13 +259,58 @@ def _looks_like_words(ln: str) -> bool:
     return len(alpha_words) >= 2
 
 
+def _status_from_stream_json(buf: bytes) -> str:
+    """Extract a status message from Claude's --output-format=stream-json events.
+
+    Each line is a JSON event. We surface the most recent human-meaningful signal:
+    an assistant text delta, a tool_use (what Claude is doing), or the final result.
+    Returns '' if the buffer isn't stream-json (caller falls back to line parsing)."""
+    text = _ANSI.sub(b"", buf).decode("utf-8", errors="replace")
+    lines = [ln.strip() for ln in text.split("\n") if ln.strip().startswith("{")]
+    if not lines:
+        return ""
+    last_msg = ""
+    for ln in lines:
+        try:
+            ev = json.loads(ln)
+        except Exception:
+            continue
+        t = ev.get("type", "")
+        if t == "result":
+            return (ev.get("result") or "completed")[:80]
+        # assistant message with content blocks
+        msg = ev.get("message") or ev.get("delta") or {}
+        content = msg.get("content") if isinstance(msg, dict) else None
+        if isinstance(content, list):
+            for block in content:
+                bt = block.get("type", "")
+                if bt == "tool_use":
+                    tool = block.get("name", "tool")
+                    last_msg = f"using {tool}"
+                elif bt == "text" and block.get("text", "").strip():
+                    last_msg = block["text"].strip().split("\n")[0][:80]
+        elif isinstance(content, str) and content.strip():
+            last_msg = content.strip().split("\n")[0][:80]
+        # partial text delta
+        if t in ("content_block_delta", "text_delta"):
+            d = ev.get("delta", {})
+            if isinstance(d, dict) and d.get("text", "").strip():
+                last_msg = d["text"].strip().split("\n")[0][:80]
+    return last_msg
+
+
 def _last_meaningful_line(buf: bytes) -> str:
     """Extract the last human-readable STATUS line from a PTY byte buffer.
 
-    Claude Code prints its working status as bulleted lines (e.g.
-    '⏺ Implementing…', '* Verifying…'). We strip the bullet/decoration, then
+    First tries stream-json event parsing (when Claude runs with
+    --output-format=stream-json); falls back to bulleted-line extraction for
+    plain TUI output. We strip bullet/decoration, then
     require the remainder to read like real words, so mid-repaint fragments
     are ignored."""
+    # Prefer structured stream-json events when present
+    js = _status_from_stream_json(buf)
+    if js:
+        return js
     text = _ANSI.sub(b"", buf).decode("utf-8", errors="replace")
     lines = [ln.strip() for ln in text.replace("\r", "\n").split("\n")]
     for ln in reversed(lines):

@@ -5,7 +5,7 @@ Two halves that share ~/.geno/agents/:
   - runner:   execution/tracking of launched processes            → <id>.json
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .runner import (
     read_status,
